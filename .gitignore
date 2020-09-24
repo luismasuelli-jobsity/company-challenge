@@ -1,0 +1,6 @@
+# Ignoring all these files: environment-related, and python compiled files.
+*.pyc
+*.pyo
+__pycache__
+.idea
+*.iml
