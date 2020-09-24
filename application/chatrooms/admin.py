@@ -12,9 +12,24 @@ class RoomAdmin(ModelAdmin):
         Shows the last messages in the room.
         """
 
+        model = Message
+
+        def has_add_permission(self, request, obj):
+            return False
+
+        def has_change_permission(self, request, obj=None):
+            return obj is None
+
+        def has_delete_permission(self, request, obj=None):
+            return False
+
+        max_num = 50
+        extra = 0
+        ordering = ["-created_on"]
+
     list_display = ["created_on", "updated_on", "name"]
     ordering = ["name"]
-    inlines = []
+    inlines = [InlineMessageAdmin]
 
 
 class MessageAdmin(ModelAdmin):
@@ -22,7 +37,7 @@ class MessageAdmin(ModelAdmin):
     Allows a lookup of a message by its content.
     """
 
-    list_display = ["created_on", "user", "room" "content"]
+    list_display = ["created_on", "user", "room", "content"]
     list_display_links = ["created_on"]
     search_fields = ["content"]
     ordering = ["created_on"]
@@ -30,4 +45,4 @@ class MessageAdmin(ModelAdmin):
 
 # Register your models here.
 site.register(Room, RoomAdmin)
-site.register(Message, Message)
+site.register(Message, MessageAdmin)
