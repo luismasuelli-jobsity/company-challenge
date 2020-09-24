@@ -5,3 +5,5 @@ __pycache__
 .idea
 *.iml
 *.sqlite3
+# Also ignoring the .env file since it should be private.
+.env
