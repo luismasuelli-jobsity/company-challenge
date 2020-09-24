@@ -24,3 +24,23 @@ services:
     # compose network.
     expose:
       - 6379
+  server:
+    working_dir: /code
+    build:
+      context: ./application
+    # Maps the port to the machine, so the
+    # web interface can be queried and also
+    # the websockets work appropriately to
+    # the front end.
+    ports:
+      - 8000:8000
+    # This port is exposed to enable the bot
+    # connecting to it.
+    expose:
+      - 8000
+    # This is for a development deploy. This
+    # volume will be synchronized to the /code
+    # directory inside the image. Everything
+    # will be available there.
+    volumes:
+      - ./application:/code
