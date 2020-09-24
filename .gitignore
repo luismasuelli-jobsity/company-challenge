@@ -1,6 +1,7 @@
-# Ignoring all these files: environment-related, and python compiled files.
+# Ignoring all these files: environment-related, local stuff, and python compiled files.
 *.pyc
 *.pyo
 __pycache__
 .idea
 *.iml
+*.sqlite3
