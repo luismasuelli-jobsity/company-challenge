@@ -1,3 +1,4 @@
+import urllib.parse
 from channels.auth import AuthMiddlewareStack
 from rest_framework.authtoken.models import Token
 from django.contrib.auth.models import AnonymousUser
@@ -6,24 +7,44 @@ from django.db import close_old_connections
 
 class TokenAuthMiddleware:
     """
-    Token authorization middleware for Django Channels 2.
-    Stolen from https://gist.github.com/rluts/22e05ed8f53f97bdd02eafdf38f3d60a
+    Based on https://gist.github.com/rluts/22e05ed8f53f97bdd02eafdf38f3d60a
+      and allowing the alternative of querystring-fetching.
     """
 
     def __init__(self, inner):
         self.inner = inner
 
     def __call__(self, scope):
+        found_token = None
+
         headers = dict(scope['headers'])
         if b'authorization' in headers:
+            # We try to extract token from an Authorization: Token <whatever> header.
+            token_name, token_key = headers[b'authorization'].decode().split()
+            if token_name == 'Token':
+                found_token = token_key
+
+        if not found_token:
+            # We traverse the query string in this case. The query
+            # string will have a token=<whatever> parameter somewhere
+            # and we're getting that <whatever> token if exists.
+            query_string = scope.get('query_string', '')
+            if isinstance(query_string, bytes):
+                query_string = query_string.decode()
+            for part in query_string.strip('?').split('&'):
+                if part.startswith('token='):
+                    found_token = urllib.parse.unquote(part[6:])
+
+        if found_token:
             try:
-                token_name, token_key = headers[b'authorization'].decode().split()
-                if token_name == 'Token':
-                    token = Token.objects.get(key=token_key)
-                    scope['user'] = token.user
-                    close_old_connections()
+                token = Token.objects.get(key=found_token)
+                scope['user'] = token.user
+                close_old_connections()
             except Token.DoesNotExist:
                 scope['user'] = AnonymousUser()
+        else:
+            scope['user'] = AnonymousUser()
+
         return self.inner(scope)
 
 
