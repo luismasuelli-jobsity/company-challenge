@@ -4,6 +4,10 @@ from django.contrib.auth.models import User
 from django.contrib import messages
 from django.shortcuts import render, redirect
 from .forms import LoginForm, RegisterForm
+import logging
+
+
+logger = logging.getLogger(__name__)
 
 
 def welcome(request):
@@ -20,7 +24,7 @@ def welcome(request):
             'register': RegisterForm(initial={}, prefix='register')
         })
     else:
-        if 'login_username' in request.POST:
+        if 'login-username' in request.POST:
             form = LoginForm(request.POST, prefix='login')
             if not form.is_valid():
                 for key, errors in form.errors.items():
@@ -42,7 +46,7 @@ def welcome(request):
                 else:
                     login(request, user)
                     return redirect('chatrooms:main')
-        elif 'register_username' in request.POST:
+        elif 'register-username' in request.POST:
             form = RegisterForm(request.POST, prefix='register')
             if not form.is_valid():
                 for key, errors in form.errors.items():
