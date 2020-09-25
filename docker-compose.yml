@@ -27,6 +27,8 @@ services:
   server:
     build:
       context: ./application
+    env_file:
+      - .env
     # Maps the port to the machine, so the
     # web interface can be queried and also
     # the websockets work appropriately to
