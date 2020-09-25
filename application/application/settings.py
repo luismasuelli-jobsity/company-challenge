@@ -37,11 +37,12 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'channels',
+    'channels_redis',
     'bootstrap4',
     'rest_framework',
     'rest_framework.authtoken',
     'chatrooms',
-    'channels'
 ]
 
 MIDDLEWARE = [
@@ -53,6 +54,13 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.TokenAuthentication',
+        'rest_framework.authentication.SessionAuthentication',
+    ]
+}
 
 ROOT_URLCONF = 'application.urls'
 
@@ -74,6 +82,14 @@ TEMPLATES = [
 
 
 ASGI_APPLICATION = 'application.routing.channels_router'
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': 'channels_redis.core.RedisChannelLayer',
+        'CONFIG': {
+            "hosts": [('redis', 6379)],
+        },
+    },
+}
 
 
 # Database
@@ -108,9 +124,6 @@ AUTH_PASSWORD_VALIDATORS = [
         'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
     },
 ]
-
-
-LOGIN_URL = 'chatrooms:welcome'
 
 
 # Internationalization
