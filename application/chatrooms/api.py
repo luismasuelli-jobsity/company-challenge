@@ -33,6 +33,18 @@ class UserLoginView(APIView):
         }, status=200)
 
 
+class MyProfileView(APIView, LoginRequiredMixin):
+    """
+    Retrieves the current user profile.
+    """
+
+    def get(self, request, *args, **kwargs):
+        return Response({
+            "username": request.user.username,
+            "email": request.user.email
+        }, status=200)
+
+
 class UserLogoutView(APIView, LoginRequiredMixin):
     """
     Performs a log-out for a user.
