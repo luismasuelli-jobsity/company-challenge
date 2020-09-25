@@ -1,6 +1,6 @@
 import datetime
 from asgiref.sync import async_to_sync
-from channels.generic.websocket import WebsocketConsumer, AsyncJsonWebsocketConsumer
+from channels.generic.websocket import AsyncJsonWebsocketConsumer
 from .models import Room, Message
 from .signals import session_destroyed
 import logging
@@ -60,7 +60,7 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
         session_destroyed.connect(self._on_session_destroyed, dispatch_uid='on_session_destroyed')
 
         user = self.scope["user"]
-        if not user:
+        if not user or user.is_anonymous:
             await self.send_json({"type": "error", "code": "not-authenticated"}, True)
             return False
         elif user.id in self.USERS:
@@ -99,7 +99,6 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
 
         user = self.scope.get("user")
         if user:
-            id_ = self.channel_name
             for room_name in getattr(self, 'rooms', set()):
                 await self._notify_user_leaving_room(room_name)
                 await self._remove_from_room(room_name)
