@@ -25,7 +25,6 @@ services:
     expose:
       - 6379
   server:
-    working_dir: /code
     build:
       context: ./application
     # Maps the port to the machine, so the

@@ -1,0 +1,51 @@
+{% extends 'chatrooms/base.html' %}
+{% load bootstrap4 %}
+
+{% block content %}
+    <div class="center-x pane" style="top: 240px; width: 500px">
+        <a id="login-link" href="#" role="button" class="btn">Login</a>
+        <a id="register-link" href="#" role="button" class="btn">Register</a>
+        {% bootstrap_messages %}
+        <div id="login-form">
+            <form action="" method="post">
+                {% csrf_token %}
+                {% bootstrap_form login %}
+                {% buttons %}
+                <div style="text-align: center">
+                    <button type="submit" class="btn btn-primary">
+                        Submit
+                    </button>
+                </div>
+                {% endbuttons %}
+            </form>
+        </div>
+        <div id="register-form" style="display:none">
+            <form action="" method="post">
+                {% csrf_token %}
+                {% bootstrap_form register %}
+                {% buttons %}
+                <div style="text-align: center">
+                    <button type="submit" class="btn btn-primary">
+                        Submit
+                    </button>
+                </div>
+                {% endbuttons %}
+            </form>
+        </div>
+    </div>
+{% endblock %}
+
+{% block js_footer %}
+<script type="text/javascript">
+    $(function() {
+        $('#login-link').click(function() {
+            $('#register-form').hide();
+            $('#login-form').show();
+        });
+        $('#register-link').click(function() {
+            $('#login-form').hide();
+            $('#register-form').show();
+        });
+    })
+</script>
+{% endblock %}
