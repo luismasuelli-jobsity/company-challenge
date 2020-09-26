@@ -104,12 +104,24 @@
                                     });
                                     return false;
                                 });
+
+                                window.clearWelcome = function() {
+                                    $('#welcome-content form').reset();
+                                };
                             });
                         })(jQuery);
                     </script>
                 </div>
                 <div id="chat-content">
-
+                    <script type="text/javascript">
+                        (function($) {
+                            $(function() {
+                                window.clearChat = function() {
+                                    // TODO
+                                };
+                            });
+                        })(jQuery);
+                    </script>
                 </div>
                 <div id="error-content" style="display: none">
                     <div class="alert alert=danger center-y center-x">
@@ -125,8 +137,13 @@
                                 Chat.me().done(function(data) {
                                     updateNavBar(data.username);
                                 });
+                                $('#error-content, #welcome-content').hide();
+                                clearChat();
+                                $('#chat-content').show();
+                                Chat.connect();
                             } else {
                                 Chat.clearToken();
+                                clearWelcome();
                                 updateNavBar(null);
                             }
                         };
