@@ -80,7 +80,6 @@
                                         if (xhr.status === 400) {
                                             let errors = JSON.parse(xhr.responseText);
                                             let fullMessages = [];
-                                            console.log(errors);
                                             Object.keys(errors).forEach(function(key) {
                                                 errors[key].forEach(function(message) {
                                                     let prefix = key === 'non_field_errors' ? '' : (key + ': ');
@@ -90,7 +89,7 @@
                                             $("#login-form .alert").text(fullMessages.join('\n'));
                                         } else {
                                             Chat.clearToken();
-                                            console.log("Register failure:", xhr.status, xhr.responseText);
+                                            console.log("Login failure:", xhr.status, xhr.responseText);
                                             $("#login-form .alert").text('An unexpected error has occurred');
                                         }
                                         $("#login-form .alert").show();
@@ -109,7 +108,6 @@
 
                                     Chat.register(obj.username, obj.email, obj.password).done(function(data) {
                                         Chat.login(obj.username, obj.password).done(function(data) {
-                                            console.log("Login result after register:", data);
                                             let token = Chat.getToken();
                                             if (token !== data.token && token) {
                                                 Chat.logout().always(function() {
@@ -124,7 +122,6 @@
                                         if (xhr.status === 400) {
                                             let errors = JSON.parse(xhr.responseText);
                                             let fullMessages = [];
-                                            console.log(errors);
                                             Object.keys(errors).forEach(function(key) {
                                                 errors[key].forEach(function(message) {
                                                     let prefix = key === 'non_field_errors' ? '' : (key + ': ');
@@ -174,7 +171,6 @@
                          */
                         window.updateUI = function(token) {
                             if (token) {
-                                console.log("Updating ui with token: " + token);
                                 // Set new token, request profile, and get user.
                                 Chat.setToken(token);
                                 Chat.me().done(function(data) {
@@ -182,7 +178,6 @@
                                 });
                                 chatOpen();
                             } else {
-                                console.log("Updating ui with no token");
                                 Chat.clearToken();
                                 welcome();
                                 updateNavBar(null);
@@ -214,10 +209,11 @@
                          * Displays an error message, coming from the chat.
                          * @param errorText The error text to display.
                          */
-                        window.chatError = function(errorText) {
+                        window.chatError = function(errorEvent) {
                             ChatUI.stop();
                             $('#chat-content, #welcome-content').hide();
-                            $('#error-content span').text(errorText);
+                            console.log(errorEvent);
+                            $('#error-content span').text("See further details in console");
                             $('#error-content').show();
                         };
 
