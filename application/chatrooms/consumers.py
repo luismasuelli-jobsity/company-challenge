@@ -59,14 +59,18 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
         # Set the signal for when the token sessions are destroyed.
         session_destroyed.connect(self._on_session_destroyed, dispatch_uid='on_session_destroyed')
 
+        logger.info("New connection established")
         user = self.scope["user"]
         if not user or user.is_anonymous:
+            logger.info(">> It has no user - closing")
             await self.send_json({"type": "error", "code": "not-authenticated"}, True)
             return False
         elif user.id in self.USERS:
+            logger.info(">> It is already connected with user: %d - closing" % user.id)
             await self.send_json({"type": "error", "code": "already-chatting"}, True)
             return False
         else:
+            logger.info(">> It is connecting with user: %d - moving forward" % user.id)
             self.USERS[user.id] = self
             await self.accept()
             return True
