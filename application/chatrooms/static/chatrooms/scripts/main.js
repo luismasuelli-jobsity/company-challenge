@@ -126,54 +126,56 @@
             };
         },
         /**
+         * Disconnects the chat.
+         */
+        disconnect: function() {
+            if (!this._socket) throw new ChatError("The connection is not established", "not-connected");
+        },
+        /**
+         * Tells whether a connection is established.
+         */
+        connected: function() {
+            return !!this._socket;
+        },
+        /**
          * Requests a list of the available channels.
          */
         list: function() {
-            let ctx = this;
+            if (!this._socket) throw new ChatError("The connection is not established", "not-connected");
 
-            if (!ctx._socket) throw new ChatError("The connection is not established", "not-connected");
-
-            ctx._socket.send({type: "list"});
+            this._socket.send({type: "list"});
         },
         /**
          * Requests to join to a channel.
          */
         join: function(roomName) {
-            let ctx = this;
+            if (!this._socket) throw new ChatError("The connection is not established", "not-connected");
 
-            if (!ctx._socket) throw new ChatError("The connection is not established", "not-connected");
-
-            ctx._socket.send({type: "join", room_name: roomName});
+            this._socket.send({type: "join", room_name: roomName});
         },
         /**
          * Requests to leave to a channel.
          */
         part: function(roomName) {
-            let ctx = this;
+            if (!this._socket) throw new ChatError("The connection is not established", "not-connected");
 
-            if (!ctx._socket) throw new ChatError("The connection is not established", "not-connected");
-
-            ctx._socket.send({type: "part", room_name: roomName});
+            this._socket.send({type: "part", room_name: roomName});
         },
         /**
          * Requests to broadcast a message.
          */
         talk: function(roomName, content) {
-            let ctx = this;
+            if (!this._socket) throw new ChatError("The connection is not established", "not-connected");
 
-            if (!ctx._socket) throw new ChatError("The connection is not established", "not-connected");
-
-            ctx._socket.send({type: "part", room_name: roomName, body: content});
+            this._socket.send({type: "part", room_name: roomName, body: content});
         },
         /**
          * Requests to broadcast a message.
          */
         custom: function(roomName, command, payload) {
-            let ctx = this;
+            if (!this._socket) throw new ChatError("The connection is not established", "not-connected");
 
-            if (!ctx._socket) throw new ChatError("The connection is not established", "not-connected");
-
-            ctx._socket.send({type: "part", room_name: roomName, command: command, payload: payload});
+            this._socket.send({type: "part", room_name: roomName, command: command, payload: payload});
         },
 
         // This part stands for the received messages
