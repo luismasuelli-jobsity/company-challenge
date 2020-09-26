@@ -209,8 +209,9 @@
 
     $(function() {
         // Pre-sets the token on each ajax request, if available.
-        $(document).ajaxSend(function(e, xhr, _) {
+        $(document).ajaxSend(function(e, xhr, opts) {
             let token = Chat.getToken();
+            console.log("Hitting url: " + opts.url + " using token: " + token);
             if (token) xhr.setRequestHeader('Authorization', 'Token ' + token);
 
             let csrfToken = Cookies.get('csrftoken');

@@ -61,14 +61,15 @@
                                 });
 
                                 $("#login-form form").submit(function(e) {
-                                    $("#login-form .alert").show();
+                                    $("#login-form .alert").hide();
                                     e.preventDefault();
                                     let obj = $(this).serializeObject();
 
                                     Chat.login(obj.username, obj.password).done(function(data) {
                                         let token = Chat.getToken();
-                                        if (token) {
+                                        if (token !== data.token && token) {
                                             Chat.logout().always(function() {
+                                                updateUI(null);
                                                 updateUI(data.token);
                                             });
                                         } else {
@@ -81,12 +82,13 @@
                                             console.log(errors);
                                             Object.keys(errors).forEach(function(key) {
                                                 errors[key].forEach(function(message) {
-                                                    let prefix = key == 'non_field_errors' ? '' : (key + ': ');
+                                                    let prefix = key === 'non_field_errors' ? '' : (key + ': ');
                                                     fullMessages.push(prefix + message);
                                                 });
                                             });
                                             $("#login-form .alert").text(fullMessages.join('\n'));
                                         } else {
+                                            Chat.clearToken();
                                             console.log("Register failure:", xhr.status, xhr.responseText);
                                             $("#login-form .alert").text('An unexpected error has occurred');
                                         }
@@ -95,7 +97,7 @@
                                     return false;
                                 });
                                 $("#register-form form").submit(function(e) {
-                                    $("#register-form .alert").show();
+                                    $("#register-form .alert").hide();
                                     e.preventDefault();
                                     let obj = $(this).serializeObject();
 
@@ -108,7 +110,7 @@
                                         Chat.login(obj.username, obj.password).done(function(data) {
                                             console.log("Login result after register:", data);
                                             let token = Chat.getToken();
-                                            if (token) {
+                                            if (token !== data.token && token) {
                                                 Chat.logout().always(function() {
                                                     updateUI(null);
                                                     updateUI(data.token);
@@ -124,12 +126,13 @@
                                             console.log(errors);
                                             Object.keys(errors).forEach(function(key) {
                                                 errors[key].forEach(function(message) {
-                                                    let prefix = key == 'non_field_errors' ? '' : (key + ': ');
+                                                    let prefix = key === 'non_field_errors' ? '' : (key + ': ');
                                                     fullMessages.push(prefix + message);
                                                 });
                                             });
                                             $("#register-form .alert").text(fullMessages.join('\n'));
                                         } else {
+                                            Chat.clearToken();
                                             console.log("Register failure:", xhr.status, xhr.responseText);
                                             $("#register-form .alert").text('An unexpected error has occurred');
                                         }
@@ -181,6 +184,7 @@
                          */
                         window.updateUI = function(token) {
                             if (token) {
+                                console.log("Updating ui with token: " + token);
                                 // Set new token, request profile, and get user.
                                 Chat.setToken(token);
                                 Chat.me().done(function(data) {
@@ -188,6 +192,7 @@
                                 });
                                 chatOpen();
                             } else {
+                                console.log("Updating ui with no token");
                                 Chat.clearToken();
                                 welcome();
                                 updateNavBar(null);
@@ -232,6 +237,9 @@
                                     updateUI(null);
                                 });
                             });
+
+                            // Refreshing the ui for the first time.
+                            updateUI(Chat.getToken());
                         })
                     })(jQuery);
                 </script>
