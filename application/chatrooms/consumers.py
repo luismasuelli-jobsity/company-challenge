@@ -110,6 +110,8 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
 
         Allowed commands are:
 
+         - {"type": "help"}
+         - {"type": "list"}
          - {"type": "join", "room": "..."}
          - {"type": "part", "room": "..."}
          - {"type": "message", "room": "...", "content": "..."}
@@ -142,7 +144,7 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
             elif type_ == "custom":
                 await self.receive_custom(content.get('room_name'), content.get('command'), content.get('payload'))
             else:
-                await self.send({"type": "error", "code": "unsupported-command", "content": type_})
+                await self.send_json({"type": "error", "code": "unsupported-command", "content": type_})
 
     async def receive_help(self):
         """
@@ -225,7 +227,8 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
 
         await self.channel_layer.group_send(room_name, {
             "type": "broadcast_joined",
-            "user": self.scope["user"].username, "room": room_name
+            "user": self.scope["user"].username, "room": room_name,
+            "stamp": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         })
 
     async def _send_last_50_room_messages(self, room_name):
@@ -271,7 +274,8 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
 
         await self.channel_layer.group_send(room_name, {
             "type": "broadcast_parted",
-            "user": self.scope["user"].username, "room": room_name
+            "user": self.scope["user"].username, "room": room_name,
+            "stamp": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         })
 
     async def receive_part(self, room_name):
@@ -394,19 +398,22 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
 
         username = event["user"]
         room_name = event["room"]
+        stamp = event["stamp"]
 
         if self.scope["user"].username == username:
             await self.send_json({
                 "type": "room:notification",
                 "code": "joined:you",
-                "room": room_name
+                "room": room_name,
+                "stamp": stamp
             })
         else:
             await self.send_json({
                 "type": "room:notification",
                 "code": "joined",
                 "user": username,
-                "room": room_name
+                "room": room_name,
+                "stamp": stamp
             })
 
     async def broadcast_parted(self, event):
@@ -419,19 +426,22 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
 
         username = event["user"]
         room_name = event["room"]
+        stamp = event["stamp"]
 
         if self.scope["user"].username == username:
             await self.send_json({
                 "type": "room:notification",
                 "code": "parted:you",
-                "room": room_name
+                "room": room_name,
+                "stamp": stamp
             })
         else:
             await self.send_json({
                 "type": "room:notification",
                 "code": "parted",
                 "user": username,
-                "room": room_name
+                "room": room_name,
+                "stamp": stamp
             })
 
     async def broadcast_message(self, event):
