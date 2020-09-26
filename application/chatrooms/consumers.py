@@ -112,9 +112,9 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
 
          - {"type": "help"}
          - {"type": "list"}
-         - {"type": "join", "room": "..."}
-         - {"type": "part", "room": "..."}
-         - {"type": "message", "room": "...", "content": "..."}
+         - {"type": "join", "room_name": "..."}
+         - {"type": "part", "room_name": "..."}
+         - {"type": "message", "room_name": "...", "content": "..."}
          - {"type": "custom", "code": "...", "payload": "..."}
            - These "custom" messages are not stored in log.
            - Special clients may attend these messages when sent
@@ -227,7 +227,7 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
 
         await self.channel_layer.group_send(room_name, {
             "type": "broadcast_joined",
-            "user": self.scope["user"].username, "room": room_name,
+            "user": self.scope["user"].username, "room_name": room_name,
             "stamp": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         })
 
@@ -237,10 +237,10 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
         :param room_name: The room to grab the last messages.
         """
 
-        await self.send_json({"type": "room:messages", "messages": [
-            {"time": message.created_on.strftime("%Y-%m-%d %H:%M:%S"),
-             "user": message.user.username,
-             "room": room_name}
+        await self.send_json({"type": "room:notification", "messages": [
+            {"stamp": message.created_on.strftime("%Y-%m-%d %H:%M:%S"),
+             "user": message.user.username, "room_name": room_name,
+             "body": message.content}
         ]} for message in reversed(Message.objects.order_by("-created_on")[:50]))
 
     async def receive_join(self, room_name):
@@ -274,7 +274,7 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
 
         await self.channel_layer.group_send(room_name, {
             "type": "broadcast_parted",
-            "user": self.scope["user"].username, "room": room_name,
+            "user": self.scope["user"].username, "room_name": room_name,
             "stamp": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         })
 
@@ -321,7 +321,7 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
 
         await self.channel_layer.group_send(room_name, {
             "type": "broadcast_message",
-            "user": self.scope["user"].username, "room": room_name, "body": body, "stamp": stamp
+            "user": self.scope["user"].username, "room_name": room_name, "body": body, "stamp": stamp
         })
 
     async def receive_message(self, room_name, body):
@@ -356,7 +356,7 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
 
         await self.channel_layer.group_send(room_name, {
             "type": "broadcast_custom",
-            "user": self.scope["user"].username, "room": room_name, "code": code, "payload": payload,
+            "user": self.scope["user"].username, "room_name": room_name, "code": code, "payload": payload,
             "stamp": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         })
 
@@ -393,63 +393,49 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
         Sends a message about a joining user, to the
           current user. If the user is the same, then
           a different message is sent.
-        :param event: A {"user": ..., "room": ...} message.
+        :param event: A {"user": ..., "room_name": ...} message.
         """
 
         username = event["user"]
-        room_name = event["room"]
+        room_name = event["room_name"]
         stamp = event["stamp"]
 
-        if self.scope["user"].username == username:
-            await self.send_json({
-                "type": "room:notification",
-                "code": "joined:you",
-                "room": room_name,
-                "stamp": stamp
-            })
-        else:
-            await self.send_json({
-                "type": "room:notification",
-                "code": "joined",
-                "user": username,
-                "room": room_name,
-                "stamp": stamp
-            })
+        await self.send_json({
+            "type": "room:notification",
+            "code": "joined",
+            "you": self.scope["user"].username == username,
+            "user": username,
+            "room_name": room_name,
+            "stamp": stamp
+        })
 
     async def broadcast_parted(self, event):
         """
         Sends a message about a leaving user, to the
           current user. If the user is the same, then
           a different message is sent.
-        :param event: A {"user": ..., "room": ...} packet.
+        :param event: A {"user": ..., "room_name": ...} packet.
         """
 
         username = event["user"]
-        room_name = event["room"]
+        room_name = event["room_name"]
         stamp = event["stamp"]
 
-        if self.scope["user"].username == username:
-            await self.send_json({
-                "type": "room:notification",
-                "code": "parted:you",
-                "room": room_name,
-                "stamp": stamp
-            })
-        else:
-            await self.send_json({
-                "type": "room:notification",
-                "code": "parted",
-                "user": username,
-                "room": room_name,
-                "stamp": stamp
-            })
+        await self.send_json({
+            "type": "room:notification",
+            "code": "parted",
+            "you": self.scope["user"].username == username,
+            "user": username,
+            "room_name": room_name,
+            "stamp": stamp
+        })
 
     async def broadcast_message(self, event):
         """
         Sends a message about an in-room message,
           by a particular user. If the user is
           the same, a different message is sent.
-        :param event: A {"user": ..., "room": ...,
+        :param event: A {"user": ..., "room_name": ...,
           "body": ..., "stamp": ...} packet.
         """
 
@@ -458,30 +444,22 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
         body = event['body']
         stamp = event['stamp']
 
-        if self.scope["user"].username == username:
-            await self.send_json({
-                "type": "room:notification",
-                "code": "message:you",
-                "room": room_name,
-                "body": body,
-                "stamp": stamp
-            })
-        else:
-            await self.send_json({
-                "type": "room:notification",
-                "code": "message",
-                "user": username,
-                "room": room_name,
-                "body": body,
-                "stamp": stamp
-            })
+        await self.send_json({
+            "type": "room:notification",
+            "code": "message",
+            "you": self.scope["user"].username == username,
+            "user": username,
+            "room_name": room_name,
+            "body": body,
+            "stamp": stamp
+        })
 
     async def broadcast_custom(self, event):
         """
         Sends a message about an in-room command,
           by a particular user. If the user is
           the same, a different message is sent.
-        :param event: A {"user": ..., "room": ...,
+        :param event: A {"user": ..., "room_name": ...,
           "command": ..., "payload": ..., "stamp": ...}
           packet.
         """
@@ -492,22 +470,13 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
         payload = event['payload']
         stamp = event['stamp']
 
-        if self.scope["user"].username == username:
-            await self.send_json({
-                "type": "room:notification",
-                "code": "custom:you",
-                "room": room_name,
-                "command": command,
-                "payload": payload,
-                "stamp": stamp
-            })
-        else:
-            await self.send_json({
-                "type": "room:notification",
-                "code": "custom",
-                "user": username,
-                "room": room_name,
-                "command": command,
-                "payload": payload,
-                "stamp": stamp
-            })
+        await self.send_json({
+            "type": "room:notification",
+            "code": "custom",
+            "you": self.scope["user"].username == username,
+            "user": username,
+            "room_name": room_name,
+            "command": command,
+            "payload": payload,
+            "stamp": stamp
+        })
