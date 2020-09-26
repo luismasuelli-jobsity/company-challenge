@@ -234,14 +234,24 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
     async def _send_last_50_room_messages(self, room_name):
         """
         Sends the last 50 messages, of a room, to the user.
-        :param room_name: The room to grab the last messages.
+        :param room_name: The room to grab the last messages from.
         """
 
-        await self.send_json({"type": "room:notification", "messages": [
+        await self.send_json({"type": "room:notification", "code": "messages", "messages": [
             {"stamp": message.created_on.strftime("%Y-%m-%d %H:%M:%S"),
              "user": message.user.username, "room_name": room_name,
              "body": message.content, "you": message.user == self.scope["user"]}
-        ]} for message in reversed(Message.objects.order_by("-created_on")[:50]))
+        for message in reversed(Message.objects.order_by("-created_on")[:50])]})
+
+    async def _send_room_users(self, room_name):
+        """
+        Sends all the room users (including self) to the user.
+        :param room_name: The room to get the users from.
+        """
+
+        await self.send_json({"type": "room:notification", "code": "users", "users": sorted([
+            user.username for user in self.ROOMS[room_name]
+        ])})
 
     async def receive_join(self, room_name):
         """
@@ -261,6 +271,7 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
             else:
                 await self._add_to_room(room_name)
                 await self._notify_user_joining_room(room_name)
+                await self._send_room_users(room_name)
                 await self._send_last_50_room_messages(room_name)
         except Room.DoesNotExist:
             await self.send_json({"type": "error", "code": "room:invalid", "name": room_name})
