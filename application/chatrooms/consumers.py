@@ -240,7 +240,7 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
         await self.send_json({"type": "room:notification", "messages": [
             {"stamp": message.created_on.strftime("%Y-%m-%d %H:%M:%S"),
              "user": message.user.username, "room_name": room_name,
-             "body": message.content}
+             "body": message.content, "you": message.user == self.scope["user"]}
         ]} for message in reversed(Message.objects.order_by("-created_on")[:50]))
 
     async def receive_join(self, room_name):
