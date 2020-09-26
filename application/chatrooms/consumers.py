@@ -169,12 +169,13 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
     async def receive_list(self):
         """
         Processes a list command. This command will return
-          a list of all the available rooms in the server.
+          a list of all the available rooms in the server,
+          also telling which one is the user joined to.
         """
 
-        await self.send_json({"type": "notification", "code": "list", "list": [
-            room.name for room in Room.objects.order_by('name')
-        ]})
+        await self.send_json({"type": "notification", "code": "list", "list": [{
+            "name": room.name, "joined": room.name in self.rooms
+        } for room in Room.objects.order_by('name')]})
 
     async def _expect_types(self, specs):
         """
