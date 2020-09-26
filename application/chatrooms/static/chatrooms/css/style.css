@@ -121,6 +121,10 @@ html, body {
     overflow-y: auto;
 }
 
+#chat-content > .server-logs > .error {
+    color: darkred;
+}
+
 #chat-message > .room {
     grid-area: room;
     display: grid;
