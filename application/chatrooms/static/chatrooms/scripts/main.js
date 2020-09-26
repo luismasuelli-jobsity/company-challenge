@@ -119,7 +119,7 @@
                                 break;
                             case "messages":
                                 message.messages.forEach(function(msg) {
-                                    ctx.Incoming.onmessage(msg.room_name, msg.stamp, msg.user, msg.you, msg.body);
+                                    ctx.Incoming.onhistorymessage(msg.room_name, msg.stamp, msg.user, msg.you, msg.body);
                                 });
                                 break;
                             case "message":
@@ -204,6 +204,7 @@
             onerror: function(msg) {},
             onlist: function(roomList) {},
             onusers: function(roomName, users) {},
+            onhistorymessage: function(roomName, stamp, username, you, body) {},
             onmessage: function(roomName, stamp, username, you, body) {},
             oncustom: function(roomName, stamp, username, you, command, payload) {},
             onjoin: function(roomName, stamp, username, you) {},
