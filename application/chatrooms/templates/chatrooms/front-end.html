@@ -8,6 +8,7 @@
         {% bootstrap_css %}
         <link rel="stylesheet" type="text/css" href="{% static 'chatrooms/css/style.css' %}" />
         {% bootstrap_javascript jquery='full' %}
+        <script type="text/javascript" src="{% static 'chatrooms/scripts/cookies.js' %}"></script>
         <script type="text/javascript" src="{% static 'chatrooms/scripts/error.js' %}"></script>
         <script type="text/javascript" src="{% static 'chatrooms/scripts/main.js' %}"></script>
     </head>
@@ -21,7 +22,7 @@
                     {% bootstrap_messages %}
                     <div id="login-form">
                         <form method="post" novalidate>
-                            <div class="alert alert-danger" style="display: none" role="alert"></div>
+                            <div class="alert alert-danger" style="display: none; white-space: pre-line" role="alert"></div>
                             {% csrf_token %}
                             {% bootstrap_form login %}
                             {% buttons %}
@@ -35,7 +36,7 @@
                     </div>
                     <div id="register-form" style="display:none">
                         <form method="post" novalidate>
-                            <div class="alert alert-danger hidden" style="display: none" role="alert"></div>
+                            <div class="alert alert-danger hidden" style="display: none; white-space: pre-line" role="alert"></div>
                             {% csrf_token %}
                             {% bootstrap_form register %}
                             {% buttons %}
@@ -60,6 +61,7 @@
                                 });
 
                                 $("#login-form form").submit(function(e) {
+                                    $("#login-form .alert").show();
                                     e.preventDefault();
                                     let obj = $(this).serializeObject();
 
@@ -73,16 +75,32 @@
                                             updateUI(data.token);
                                         }
                                     }).fail(function(xhr) {
-                                        console.log("Login failure:", data.status);
+                                        if (xhr.status === 400) {
+                                            let errors = JSON.parse(xhr.responseText);
+                                            let fullMessages = [];
+                                            console.log(errors);
+                                            Object.keys(errors).forEach(function(key) {
+                                                errors[key].forEach(function(message) {
+                                                    let prefix = key == 'non_field_errors' ? '' : (key + ': ');
+                                                    fullMessages.push(prefix + message);
+                                                });
+                                            });
+                                            $("#login-form .alert").text(fullMessages.join('\n'));
+                                        } else {
+                                            console.log("Register failure:", xhr.status, xhr.responseText);
+                                            $("#login-form .alert").text('An unexpected error has occurred');
+                                        }
+                                        $("#login-form .alert").show();
                                     });
                                     return false;
                                 });
                                 $("#register-form form").submit(function(e) {
+                                    $("#register-form .alert").show();
                                     e.preventDefault();
                                     let obj = $(this).serializeObject();
 
                                     if (obj.password !== obj.password_confirm) {
-                                        $("#register-form .alert").text("Password do not match");
+                                        $("#register-form .alert").text("Password do not match").show();
                                         return false;
                                     }
 
@@ -100,13 +118,33 @@
                                             }
                                         });
                                     }).fail(function(xhr) {
-                                        console.log("Register failure:", data.status);
+                                        if (xhr.status === 400) {
+                                            let errors = JSON.parse(xhr.responseText);
+                                            let fullMessages = [];
+                                            console.log(errors);
+                                            Object.keys(errors).forEach(function(key) {
+                                                errors[key].forEach(function(message) {
+                                                    let prefix = key == 'non_field_errors' ? '' : (key + ': ');
+                                                    fullMessages.push(prefix + message);
+                                                });
+                                            });
+                                            $("#register-form .alert").text(fullMessages.join('\n'));
+                                        } else {
+                                            console.log("Register failure:", xhr.status, xhr.responseText);
+                                            $("#register-form .alert").text('An unexpected error has occurred');
+                                        }
+                                        $("#register-form .alert").show();
                                     });
                                     return false;
                                 });
 
+                                /**
+                                 * Resets all the forms.
+                                 */
                                 window.clearWelcome = function() {
-                                    $('#welcome-content form').reset();
+                                    $('#welcome-content form').each(function() {
+                                        this.reset();
+                                    });
                                 };
                             });
                         })(jQuery);
@@ -178,7 +216,7 @@
 
                         /**
                          * Displays an error message, coming from the chat.
-                         * @param errorText
+                         * @param errorText The error text to display.
                          */
                         window.chatError = function(errorText) {
                             if (Chat.connected()) Chat.disconnect();
