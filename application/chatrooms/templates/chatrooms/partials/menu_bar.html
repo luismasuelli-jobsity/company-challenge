@@ -6,15 +6,12 @@
     </button>
     <div class="collapse navbar-collapse">
         <ul class="navbar-nav ml-auto">
-            {% if user.is_authenticated %}
-            <li class="nav-item">
-                You're logged in as {{ user.username }}. <a href="{% url 'chatrooms:goodbye' %}">Logout</a>
+            <li id="logged-user-label" class="nav-item hidden">
+                You're logged in as <span></span>. <a id="do-logout">Logout</a>
             </li>
-            {% else %}
-            <li class="nav-item">
-                <a href="{% url 'chatrooms:welcome' %}">Login or Register</a>
+            <li id="anonymous-user-label" class="nav-item">
+                Sign in or register to chat
             </li>
-            {% endif %}
         </ul>
     </div>
 </nav>
