@@ -11,6 +11,7 @@
         <script type="text/javascript" src="{% static 'chatrooms/scripts/cookies.js' %}"></script>
         <script type="text/javascript" src="{% static 'chatrooms/scripts/error.js' %}"></script>
         <script type="text/javascript" src="{% static 'chatrooms/scripts/main.js' %}"></script>
+        <script type="text/javascript" src="{% static 'chatrooms/scripts/ui.js' %}"></script>
     </head>
     <body>
         <div id="content" class="container-fluid full-size">
@@ -153,18 +154,7 @@
                         })(jQuery);
                     </script>
                 </div>
-                <div id="chat-content">
-                    <!-- TODO the whole chat interface -->
-                    <script type="text/javascript">
-                        (function($) {
-                            $(function() {
-                                window.clearChat = function() {
-                                    // TODO
-                                };
-                            });
-                        })(jQuery);
-                    </script>
-                </div>
+                <div id="chat-content"></div>
                 <div id="error-content" style="display: none">
                     <div class="alert alert=danger center-y center-x">
                         An error has occurred while on chat: <span></span>. <a id="do-reconnect" role="button">Try again</a>
@@ -203,7 +193,7 @@
                          * Opens the welcome interface.
                          */
                         window.welcome = function() {
-                            if (Chat.connected()) Chat.disconnect();
+                            ChatUI.stop();
                             $('#chat-content, #error-content').hide();
                             clearWelcome();
                             $('#welcome-content').show();
@@ -214,8 +204,9 @@
                          */
                         window.chatOpen = function() {
                             $('#error-content, #welcome-content').hide();
-                            clearChat();
-                            $('#chat-content').show();
+                            let content = $("#chat-content");
+                            ChatUI.start(content, window.chatError);
+                            content.show();
                             if (!Chat.connected()) Chat.connect();
                         };
 
@@ -224,7 +215,7 @@
                          * @param errorText The error text to display.
                          */
                         window.chatError = function(errorText) {
-                            if (Chat.connected()) Chat.disconnect();
+                            ChatUI.stop();
                             $('#chat-content, #welcome-content').hide();
                             $('#error-content span').text(errorText);
                             $('#error-content').show();
