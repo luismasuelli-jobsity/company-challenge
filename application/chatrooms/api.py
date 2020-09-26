@@ -1,10 +1,14 @@
-from django.contrib.auth.mixins import LoginRequiredMixin
 from rest_framework.authtoken.models import Token
 from rest_framework.generics import CreateAPIView
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from .serializers import UserCreateSerializer, UserLoginSerializer
 from .signals import session_destroyed
+import logging
+
+
+logger = logging.getLogger(__name__)
 
 
 class UserCreateView(CreateAPIView):
@@ -25,32 +29,38 @@ class UserLoginView(APIView):
         serializer = UserLoginSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         user = serializer.validated_data['user']
-        token = Token.objects.get_or_create(user=user)
+        token, _ = Token.objects.get_or_create(user=user)
         # Everything is fine in this login process.
         # Let's return the key.
         return Response({
-            'token': token
+            'token': token.key
         }, status=200)
 
 
-class MyProfileView(APIView, LoginRequiredMixin):
+class MyProfileView(APIView):
     """
     Retrieves the current user profile.
     """
 
+    permission_classes = (IsAuthenticated,)
+
     def get(self, request, *args, **kwargs):
+        logger.debug("Profile: ok")
         return Response({
             "username": request.user.username,
             "email": request.user.email
         }, status=200)
 
 
-class UserLogoutView(APIView, LoginRequiredMixin):
+class UserLogoutView(APIView):
     """
     Performs a log-out for a user.
     """
 
+    permission_classes = (IsAuthenticated,)
+
     def post(self, request, *args, **kwargs):
+        logger.debug("Logout: ok")
         token = Token.objects.get(user=request.user)
         session_destroyed.send(sender=token)
         token.delete()
