@@ -61,3 +61,99 @@ html, body {
     flex: 1;
     position: relative;
 }
+
+#chat-content {
+    width: 100%;
+    height: 100%;
+    display: grid;
+    grid-template-columns: 100px calc(100% - 100px);
+    grid-template-rows: calc(100% - 24px) 24px;
+    grid-template-areas:
+        "rooms room"
+        "rooms message";
+}
+
+#chat-content > .rooms-sidebar {
+    grid-area: rooms;
+    padding: 8px;
+    overflow-x: hidden;
+    overflow-y: auto;
+}
+
+#chat-content > .rooms-sidebar .server-logs {
+    color: red;
+}
+
+#chat-content > .rooms-sidebar .hint {
+    color: blue;
+}
+
+#chat-content > .rooms-sidebar .room-item {
+    color: black;
+}
+
+#chat-content > .rooms-sidebar .room-item.joined {
+    color: black;
+    font-weight: bold;
+}
+
+#chat-content > .rooms-sidebar .room-item.joined.active {
+    color: green;
+    font-weight: bold;
+}
+
+#chat-message > .room {
+    grid-area: room;
+    display: grid;
+    font-size: 14px;
+    grid-template-columns: calc(100% - 100px) 100px;
+    grid-template-rows: 100%;
+    grid-template-areas:
+        "messages users";
+}
+
+#chat-message > .room > .messages {
+    grid-area: messages;
+    padding: 8px;
+    overflow-x: hidden;
+    overflow-y: auto;
+}
+
+#chat-message > .room > .messages .stamp {
+    color: gray;
+    font-weight: bold;
+    margin-right: 4px;
+}
+
+#chat-message > .room > .messages .author {
+    color: gray;
+    font-weight: bold;
+    margin-right: 4px;
+}
+
+#chat-message > .room > .messages .body {
+    color: black;
+}
+
+#chat-message > .room > .users {
+    grid-area: users;
+    padding: 8px;
+    overflow-x: hidden;
+    overflow-y: auto;
+}
+
+#chat-content > .message {
+    display: flex;
+    flex-direction: row;
+}
+
+#chat-content > .message > input {
+    flex: 1;
+    height: 24px;
+    font-size: 14px;
+}
+
+#chat-content > .message > button {
+    height: 24px;
+    width: 96px;
+}
