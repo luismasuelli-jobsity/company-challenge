@@ -3,6 +3,10 @@ from channels.auth import AuthMiddlewareStack
 from rest_framework.authtoken.models import Token
 from django.contrib.auth.models import AnonymousUser
 from django.db import close_old_connections
+import logging
+
+
+logger = logging.getLogger(__name__)
 
 
 class TokenAuthMiddleware:
@@ -16,6 +20,7 @@ class TokenAuthMiddleware:
 
     def __call__(self, scope):
         found_token = None
+        logger.info("A connection is starting...")
 
         headers = dict(scope['headers'])
         if b'authorization' in headers:
