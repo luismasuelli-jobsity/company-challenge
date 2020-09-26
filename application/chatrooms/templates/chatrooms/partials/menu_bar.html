@@ -15,3 +15,14 @@
         </ul>
     </div>
 </nav>
+<script type="text/javascript">
+    function updateNavBar(username) {
+        $('#anonymous-user-label').addClass('hidden');
+        $('#logged-user-label span').text(username);
+        $('#logged-user-label').removeClass('hidden');
+    }
+
+    function onLogoutClick(callback) {
+        $('#do-logout').click(callback);
+    }
+</script>
