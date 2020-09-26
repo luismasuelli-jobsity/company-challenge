@@ -242,7 +242,8 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
             {"stamp": message.created_on.strftime("%Y-%m-%d %H:%M:%S"),
              "user": message.user.username, "room_name": room_name,
              "body": message.content, "you": message.user == self.scope["user"]}
-        for message in reversed(Message.objects.order_by("-created_on")[:50])]})
+            for message in Message.objects.order_by("-created_on")[:50]
+        ]})
 
     async def _send_room_users(self, room_name):
         """
