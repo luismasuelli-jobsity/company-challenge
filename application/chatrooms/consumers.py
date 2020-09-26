@@ -1,5 +1,6 @@
 import datetime
 from asgiref.sync import async_to_sync
+from channels.db import database_sync_to_async
 from channels.generic.websocket import AsyncJsonWebsocketConsumer
 from .models import Room, Message
 from .signals import session_destroyed
@@ -22,7 +23,7 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
     ROOMS = {}
 
     @classmethod
-    def _on_session_destroyed(cls, sender):
+    def _on_session_destroyed(cls, sender, **kwargs):
         """
         This handler is invoked when a token session is destroyed.
           The websocket that is connected to this channel server
@@ -36,7 +37,7 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
             async_to_sync(consumer.send_json)({"type": "notification", "code": "logged-out"}, True)
 
     @classmethod
-    def _on_room_destroyed(cls, sender, instance, using):
+    def _on_room_destroyed(cls, sender, instance, using, **kwargs):
         """
         This handler is invoked when a room is destroyed.
         :param sender: Room class.
@@ -61,6 +62,7 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
 
         logger.info("New connection established")
         user = self.scope["user"]
+        await self.accept()
         if not user or user.is_anonymous:
             logger.info(">> It has no user - closing")
             await self.send_json({"type": "error", "code": "not-authenticated"}, True)
@@ -72,7 +74,6 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
         else:
             logger.info(">> It is connecting with user: %d - moving forward" % user.id)
             self.USERS[user.id] = self
-            await self.accept()
             return True
 
     async def connect(self):
@@ -179,7 +180,7 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
 
         await self.send_json({"type": "notification", "code": "list", "list": [{
             "name": room.name, "joined": room.name in self.rooms
-        } for room in Room.objects.order_by('name')]})
+        } for room in await database_sync_to_async(lambda: Room.objects.order_by('name'))()]})
 
     async def _expect_types(self, specs):
         """
@@ -246,7 +247,7 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
             {"stamp": message.created_on.strftime("%Y-%m-%d %H:%M:%S"),
              "user": message.user.username, "room_name": room_name,
              "body": message.content, "you": message.user == self.scope["user"]}
-            for message in Message.objects.order_by("-created_on")[:50]
+            for message in await database_sync_to_async(lambda: Message.objects.order_by("-created_on")[:50])()
         ]})
 
     async def _send_room_users(self, room_name):
@@ -270,7 +271,7 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
             return
 
         try:
-            Room.objects.get(name=room_name)
+            await database_sync_to_async(lambda: Room.objects.get(name=room_name))()
             self.rooms = getattr(self, 'rooms', set())
             if room_name in self.rooms:
                 await self.send_json({"type": "error", "code": "room:already-joined", "details": {"name": room_name}})
@@ -312,7 +313,7 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
         else:
             await self.send_json({"type": "error", "code": "room:not-joined", "details": {"name": room_name}})
 
-    def _store_message(self, room_name, body):
+    async def _store_message(self, room_name, body):
         """
         Stores the message, sent by the user, in database.
         :param room_name: The name of the room where the message
@@ -322,9 +323,9 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
         """
 
         try:
-            return Message.objects.create(room=Room.objects.get(
+            return await database_sync_to_async(lambda: Message.objects.create(room=Room.objects.get(
                 name=room_name, content=body[:512], user=self.scope["user"]
-            ))
+            )))()
         except Room.DoesNotExist:
             logger.warning("Trying to store a message for non-existing room: " + room_name)
 
@@ -356,7 +357,7 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
         if room_name in self.rooms:
             body = body.strip()
             if body:
-                message = self._store_message(room_name, body)
+                message = await self._store_message(room_name, body)
                 await self._broadcast_message(room_name, body, message.created_on.strftime("%Y-%m-%d %H:%M:%S"))
             else:
                 await self.send_json({"type": "error", "code": "room:empty-message"})
