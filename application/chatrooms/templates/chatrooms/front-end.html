@@ -113,6 +113,7 @@
                     </script>
                 </div>
                 <div id="chat-content">
+                    <!-- TODO the whole chat interface -->
                     <script type="text/javascript">
                         (function($) {
                             $(function() {
@@ -130,6 +131,16 @@
                 </div>
                 <script type="text/javascript">
                     (function($) {
+                        // From this point, interface-manipulating functions start.
+                        // These are the front-end lifecycle of the application.
+
+                        /**
+                         * Updated the whole UI, given the existing token.
+                         * First, the profile endpoint is reached to get
+                         * the username, and in the meantime the chat is
+                         * opened, cleared and connected.
+                         * @param token The token to keep.
+                         */
                         window.updateUI = function(token) {
                             if (token) {
                                 // Set new token, request profile, and get user.
@@ -137,18 +148,47 @@
                                 Chat.me().done(function(data) {
                                     updateNavBar(data.username);
                                 });
-                                $('#error-content, #welcome-content').hide();
-                                clearChat();
-                                $('#chat-content').show();
-                                Chat.connect();
+                                chatOpen();
                             } else {
                                 Chat.clearToken();
-                                clearWelcome();
+                                welcome();
                                 updateNavBar(null);
                             }
                         };
 
+                        /**
+                         * Opens the welcome interface.
+                         */
+                        window.welcome = function() {
+                            if (Chat.connected()) Chat.disconnect();
+                            $('#chat-content, #error-content').hide();
+                            clearWelcome();
+                            $('#welcome-content').show();
+                        };
+
+                        /**
+                         * Opens the chat interface, and connects.
+                         */
+                        window.chatOpen = function() {
+                            $('#error-content, #welcome-content').hide();
+                            clearChat();
+                            $('#chat-content').show();
+                            if (!Chat.connected()) Chat.connect();
+                        };
+
+                        /**
+                         * Displays an error message, coming from the chat.
+                         * @param errorText
+                         */
+                        window.chatError = function(errorText) {
+                            if (Chat.connected()) Chat.disconnect();
+                            $('#chat-content, #welcome-content').hide();
+                            $('#error-content span').text(errorText);
+                            $('#error-content').show();
+                        };
+
                         $(function() {
+                            // On clicking the logout link, a logout must be performed.
                             onLogoutClick(function() {
                                 Chat.logout().always(function() {
                                     updateUI(null);
