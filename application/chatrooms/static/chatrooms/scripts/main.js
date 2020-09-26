@@ -30,7 +30,7 @@
          * front-end.
          */
         me: function() {
-            return $.get('/profile');
+            return $.get('/profile', null, 'json');
         },
         /**
          * Performs a log-in with the current username and
@@ -42,7 +42,7 @@
             return $.post('/login', {
                 username: username,
                 password: password
-            });
+            }, null, 'json');
         },
         /**
          * Performs the registration of a new user account
@@ -56,13 +56,13 @@
                 username: username,
                 email: email,
                 password: password
-            });
+            }, null, 'json');
         },
         /**
          * Performs a logout of the current account.
          */
         logout: function() {
-            return $.post('/logout');
+            return $.post('/logout', null, 'json');
         },
 
         // Socket-related utility functions start here.
