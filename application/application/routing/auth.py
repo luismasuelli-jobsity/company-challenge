@@ -67,7 +67,7 @@ class TokenAuthMiddlewareInstance:
                     found_token = urllib.parse.unquote(part[6:])
 
         if found_token:
-            scope['user'] = await get_user(headers)
+            scope['user'] = await get_user(found_token)
         else:
             scope['user'] = AnonymousUser()
 
