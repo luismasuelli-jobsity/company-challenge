@@ -1,0 +1,68 @@
+{% load static %}
+{% load bootstrap4 %}
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <title>Financial Chat</title>
+        {% bootstrap_css %}
+        <link rel="stylesheet" type="text/css" href="{% static 'chatrooms/css/style.css' %}" />
+        {% bootstrap_javascript jquery='full' %}
+        <script type="text/javascript" src="{% static 'chatrooms/scripts/error.js' %}"></script>
+        <script type="text/javascript" src="{% static 'chatrooms/scripts/main.js' %}"></script>
+    </head>
+    <body>
+        <div id="content" class="container-fluid full-size">
+            {% include 'chatrooms/partials/menu_bar.html' %}
+            <div id="display">
+                <div id="welcome-content" class="center-x pane" style="top: 240px; width: 500px">
+                    <a id="login-link" href="#" role="button" class="btn">Login</a>
+                    <a id="register-link" href="#" role="button" class="btn">Register</a>
+                    {% bootstrap_messages %}
+                    <div id="login-form">
+                        <form action="{% url 'chatrooms:login' %}" method="post" class="asynchronous"
+                              enctype="application/json">
+                            {% csrf_token %}
+                            {% bootstrap_form login %}
+                            {% buttons %}
+                            <div style="text-align: center">
+                                <button type="submit" class="btn btn-primary">
+                                    Submit
+                                </button>
+                            </div>
+                            {% endbuttons %}
+                        </form>
+                    </div>
+                    <div id="register-form" style="display:none">
+                        <form action="{% url 'chatrooms:register' %}" method="post" class="asynchronous"
+                              enctype="application/json">
+                            {% csrf_token %}
+                            {% bootstrap_form register %}
+                            {% buttons %}
+                            <div style="text-align: center">
+                                <button type="submit" class="btn btn-primary">
+                                    Submit
+                                </button>
+                            </div>
+                            {% endbuttons %}
+                        </form>
+                    </div>
+                    <script type="text/javascript">
+                        (function($) {
+                            $(function() {
+                                $('#login-link').click(function() {
+                                    $('#register-form').hide();
+                                    $('#login-form').show();
+                                });
+                                $('#register-link').click(function() {
+                                    $('#login-form').hide();
+                                    $('#register-form').show();
+                                });
+                            });
+                        })(jQuery);
+                    </script>
+                </div>
+            </div>
+        </div>
+    </body>
+</html>
