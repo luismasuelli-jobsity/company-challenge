@@ -17,6 +17,8 @@ class UserCreateView(CreateAPIView):
       for log-in.
     """
 
+    authentication_classes = ()
+
     serializer_class = UserCreateSerializer
 
 
@@ -24,6 +26,8 @@ class UserLoginView(APIView):
     """
     Performs a log-in for a user.
     """
+
+    authentication_classes = ()
 
     def post(self, request, *args, **kwargs):
         serializer = UserLoginSerializer(data=request.data)
@@ -64,4 +68,4 @@ class UserLogoutView(APIView):
         token = Token.objects.get(user=request.user)
         session_destroyed.send(sender=token)
         token.delete()
-        return Response('', status=204)
+        return Response(status=204)
