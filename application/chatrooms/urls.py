@@ -9,5 +9,5 @@ urlpatterns = [
     path('profile', api.MyProfileView.as_view(), name="profile"),
     path('login', api.UserLoginView.as_view(), name="login"),
     path('register', api.UserCreateView.as_view(), name="register"),
-    path('logout', api.UserLogoutView, name="logout")
+    path('logout', api.UserLogoutView.as_view(), name="logout")
 ]
