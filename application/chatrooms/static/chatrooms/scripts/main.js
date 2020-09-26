@@ -99,7 +99,7 @@
 
             if (ctx._socket) throw new ChatError("The connection is already established", "already-connected");
 
-            let connection = new WebSocket("ws:///ws/chat/?token=" + ctx.getToken());
+            let connection = new WebSocket("ws://" + window.location.host + "/ws/chat/?token=" + ctx.getToken());
             connection.onopen = function(e) {
                 ctx._socket = connection;
             };
