@@ -162,7 +162,7 @@
         list: function() {
             if (!this._socket) throw new ChatError("The connection is not established", "not-connected");
 
-            this._socket.send({type: "list"});
+            this._send({type: "list"});
         },
         /**
          * Requests to join to a channel.
@@ -170,7 +170,7 @@
         join: function(roomName) {
             if (!this._socket) throw new ChatError("The connection is not established", "not-connected");
 
-            this._socket.send({type: "join", room_name: roomName});
+            this._send({type: "join", room_name: roomName});
         },
         /**
          * Requests to leave to a channel.
@@ -178,7 +178,7 @@
         part: function(roomName) {
             if (!this._socket) throw new ChatError("The connection is not established", "not-connected");
 
-            this._socket.send({type: "part", room_name: roomName});
+            this._send({type: "part", room_name: roomName});
         },
         /**
          * Requests to broadcast a message.
@@ -186,7 +186,7 @@
         talk: function(roomName, content) {
             if (!this._socket) throw new ChatError("The connection is not established", "not-connected");
 
-            this._socket.send({type: "part", room_name: roomName, body: content});
+            this._send({type: "message", room_name: roomName, body: content});
         },
         /**
          * Requests to broadcast a message.
@@ -194,7 +194,7 @@
         custom: function(roomName, command, payload) {
             if (!this._socket) throw new ChatError("The connection is not established", "not-connected");
 
-            this._socket.send({type: "part", room_name: roomName, command: command, payload: payload});
+            this._send({type: "custom", room_name: roomName, command: command, payload: payload});
         },
 
         // This part stands for the received messages
