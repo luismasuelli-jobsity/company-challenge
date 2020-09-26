@@ -153,7 +153,7 @@
                 </div>
                 <div id="chat-content"></div>
                 <div id="error-content" style="display: none">
-                    <div class="alert alert=danger center-y center-x">
+                    <div class="alert alert-danger center-y center-x">
                         An error has occurred while on chat: <span></span>. <a id="do-reconnect" role="button">Try again</a>
                     </div>
                 </div>
@@ -209,11 +209,10 @@
                          * Displays an error message, coming from the chat.
                          * @param errorText The error text to display.
                          */
-                        window.chatError = function(errorEvent) {
+                        window.chatError = function(message) {
                             ChatUI.stop();
                             $('#chat-content, #welcome-content').hide();
-                            console.log(errorEvent);
-                            $('#error-content span').text("See further details in console");
+                            $('#error-content span').text(message);
                             $('#error-content').show();
                         };
 

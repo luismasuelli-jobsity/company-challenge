@@ -25,11 +25,14 @@
                 Chat.Incoming.onlist = ctx._listRooms.bind(ctx);
                 Chat.Incoming.onmessage = ctx._messageReceived.bind(ctx);
                 Chat.Incoming.onhistorymessage = ctx._historyMessageReceived.bind(ctx);
-                Chat.Incoming.onerror = function(code, details) {
-                    if (code === "websocket") {
-                        onerror(details.text);
-                    } else {
-                        ctx._errorReceived(code, details);
+                Chat.Incoming.onerror = ctx._errorReceived.bind(ctx);
+                Chat.Incoming.onfatal = function(code) {
+                    if (code === "not-authenticated") {
+                        onerror("You're not authenticated");
+                    } else if (code === "already-chatting") {
+                        onerror("This account is already chatting");
+                    } else if (code === "websocket") {
+                        onerror("A websocket error - check your console for more details");
                     }
                 };
             }

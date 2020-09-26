@@ -106,6 +106,9 @@
             connection.onmessage = function(e) {
                 let message = JSON.parse(e.data);
                 switch(message.type) {
+                    case "fatal":
+                        ctx.Incoming.onfatal(message.code);
+                        break;
                     case "error":
                         ctx.Incoming.onerror(message.code, message.details);
                         break;
@@ -141,7 +144,8 @@
                 ctx._socket = null;
             };
             connection.onerror = function(m) {
-                ctx.Incoming.onerror("websocket", {text: m});
+                console.log("Websocket error:", m);
+                ctx.Incoming.onfatal("websocket");
             };
         },
         /**
@@ -202,6 +206,7 @@
 
         Incoming: {
             onerror: function(code, details) {},
+            onfatal: function(code) {},
             onlist: function(roomList) {},
             onusers: function(roomName, users) {},
             onhistorymessage: function(roomName, stamp, username, you, body) {},
