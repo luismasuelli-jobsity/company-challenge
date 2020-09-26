@@ -6,8 +6,8 @@ urlpatterns = [
     path('', views.index, name='index'),
 
     # API endpoints:
-    path('profile', api.MyProfileView.as_view()),
-    path('login', api.UserLoginView.as_view()),
-    path('register', api.UserCreateView.as_view()),
-    path('logout', api.UserLogoutView)
+    path('profile', api.MyProfileView.as_view(), name="profile"),
+    path('login', api.UserLoginView.as_view(), name="login"),
+    path('register', api.UserCreateView.as_view(), name="register"),
+    path('logout', api.UserLogoutView, name="logout")
 ]

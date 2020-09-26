@@ -49,3 +49,15 @@ html, body {
 .hidden {
     display: none;
 }
+
+#content {
+    height: 100%;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+#display {
+    flex: 1;
+    position: relative;
+}
