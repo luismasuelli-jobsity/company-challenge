@@ -107,7 +107,7 @@
                 let message = JSON.parse(e.data);
                 switch(message.type) {
                     case "error":
-                        ctx.Incoming.onerror(message);
+                        ctx.Incoming.onerror(message.code, message.details);
                         break;
                     default:
                         switch(message.code) {
@@ -140,8 +140,8 @@
             connection.onclose = function() {
                 ctx._socket = null;
             };
-            connection.onerror = function() {
-                ctx.Incoming.onerror(null);
+            connection.onerror = function(m) {
+                ctx.Incoming.onerror("websocket", {text: m});
             };
         },
         /**
@@ -201,7 +201,7 @@
         // Each callback must be assigned on its own.
 
         Incoming: {
-            onerror: function(msg) {},
+            onerror: function(code, details) {},
             onlist: function(roomList) {},
             onusers: function(roomName, users) {},
             onhistorymessage: function(roomName, stamp, username, you, body) {},

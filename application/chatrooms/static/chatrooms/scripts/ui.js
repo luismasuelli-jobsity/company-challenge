@@ -25,7 +25,13 @@
                 Chat.Incoming.onlist = ctx._listRooms.bind(ctx);
                 Chat.Incoming.onmessage = ctx._messageReceived.bind(ctx);
                 Chat.Incoming.onhistorymessage = ctx._historyMessageReceived.bind(ctx);
-                Chat.Incoming.onerror = onerror;
+                Chat.Incoming.onerror = function(code, details) {
+                    if (code === "websocket") {
+                        onerror(details.text);
+                    } else {
+                        ctx._errorReceived(code, details);
+                    }
+                };
             }
         },
 
@@ -195,6 +201,14 @@
             })
         },
 
+        // Handles receiving an error.
+        _errorReceived: function(code, details) {
+            this._selectActiveRoom('');
+            this._rooms[''].append(
+                $('<div class="error" />').append("Error code: " + code + ' - details: ' + JSON.stringify(details))
+            );
+        },
+
         // Stops the socket.
         stop: function() {
             if (this._status !== 'closed') {
@@ -206,7 +220,7 @@
                 Chat.Incoming.onlist = function(roomList) {};
                 Chat.Incoming.onmessage = function(roomName, stamp, username, you, body) {};
                 Chat.Incoming.onhistorymessage = function(roomName, stamp, username, you, body) {};
-                Chat.Incoming.onerror = function(e) {};
+                Chat.Incoming.onerror = function(code, details) {};
                 this._parent.empty();
                 this._parent = null;
                 this._rooms = {};
