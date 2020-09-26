@@ -252,7 +252,7 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
         """
 
         await self.send_json({"type": "room:notification", "code": "users", "users": sorted([
-            user.username for user in self.ROOMS[room_name]
+            {"user": user.username, "you": user == self.scope["user"]} for user in self.ROOMS[room_name]
         ])})
 
     async def receive_join(self, room_name):
