@@ -144,7 +144,7 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
             elif type_ == "custom":
                 await self.receive_custom(content.get('room_name'), content.get('command'), content.get('payload'))
             else:
-                await self.send_json({"type": "error", "code": "unsupported-command", "content": type_})
+                await self.send_json({"type": "error", "code": "unsupported-command", "details": {"content": type_}})
 
     async def receive_help(self):
         """
@@ -269,14 +269,14 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
             Room.objects.get(name=room_name)
             self.rooms = getattr(self, 'rooms', set())
             if room_name in self.rooms:
-                await self.send_json({"type": "error", "code": "room:already-joined", "name": room_name})
+                await self.send_json({"type": "error", "code": "room:already-joined", "details": {"name": room_name}})
             else:
                 await self._add_to_room(room_name)
                 await self._notify_user_joining_room(room_name)
                 await self._send_room_users(room_name)
                 await self._send_last_50_room_messages(room_name)
         except Room.DoesNotExist:
-            await self.send_json({"type": "error", "code": "room:invalid", "name": room_name})
+            await self.send_json({"type": "error", "code": "room:invalid", "details": {"name": room_name}})
 
     async def _notify_user_leaving_room(self, room_name):
         """
@@ -306,7 +306,7 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
             await self._notify_user_leaving_room(room_name)
             await self._remove_from_room(room_name)
         else:
-            await self.send_json({"type": "error", "code": "room:not-joined", "name": room_name})
+            await self.send_json({"type": "error", "code": "room:not-joined", "details": {"name": room_name}})
 
     def _store_message(self, room_name, body):
         """
@@ -357,7 +357,7 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
             else:
                 await self.send_json({"type": "error", "code": "room:empty-message"})
         else:
-            await self.send_json({"type": "error", "code": "room:not-joined", "name": room_name})
+            await self.send_json({"type": "error", "code": "room:not-joined", "details": {"name": room_name}})
 
     async def _broadcast_custom(self, room_name, code, payload):
         """
@@ -394,7 +394,7 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
             else:
                 await self.send_json({"type": "error", "code": "room:empty-custom"})
         else:
-            await self.send_json({"type": "error", "code": "room:not-joined", "name": room_name})
+            await self.send_json({"type": "error", "code": "room:not-joined", "details": {"name": room_name}})
 
     # From this point, the broadcast_* methods are listed. They
     # have a different logic depending on the user: whether the
