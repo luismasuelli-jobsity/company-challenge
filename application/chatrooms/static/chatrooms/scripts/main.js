@@ -114,6 +114,9 @@
                             case "list":
                                 ctx.Incoming.onlist(message.list);
                                 break;
+                            case "users":
+                                ctx.Incoming.onusers(message.room_name);
+                                break;
                             case "messages":
                                 message.messages.forEach(function(msg) {
                                     ctx.Incoming.onmessage(msg.room_name, msg.stamp, msg.user, msg.you, msg.body);
@@ -200,6 +203,7 @@
         Incoming: {
             onerror: function(msg) {},
             onlist: function(roomList) {},
+            onusers: function(roomName, users) {},
             onmessage: function(roomName, stamp, username, you, body) {},
             oncustom: function(roomName, stamp, username, you, command, payload) {},
             onjoin: function(roomName, stamp, username, you) {},
