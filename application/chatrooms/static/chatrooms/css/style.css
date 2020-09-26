@@ -82,24 +82,39 @@ html, body {
 
 #chat-content > .rooms-sidebar .server-logs {
     color: red;
+    cursor: pointer;
+    text-align: center;
 }
 
-#chat-content > .rooms-sidebar .hint {
+#chat-content > .rooms-sidebar .server-logs.active {
+    background-color: lightgray;
+}
+
+#chat-content > .rooms-sidebar .reload {
     color: blue;
+    cursor: pointer;
+    text-align: center;
 }
 
 #chat-content > .rooms-sidebar .room-item {
     color: black;
+    overflow: hidden;
 }
 
 #chat-content > .rooms-sidebar .room-item.joined {
-    color: black;
     font-weight: bold;
 }
 
-#chat-content > .rooms-sidebar .room-item.joined.active {
-    color: green;
-    font-weight: bold;
+#chat-content > .rooms-sidebar .room-item.active {
+    background-color: lightgray;
+}
+
+#chat-content > .server-logs {
+    grid-area: room;
+    font-size: 14px;
+    padding: 8px;
+    overflow-x: hidden;
+    overflow-y: auto;
 }
 
 #chat-message > .room {
@@ -135,11 +150,27 @@ html, body {
     color: black;
 }
 
+#chat-message > .room > .messages .join {
+    color: darkgreen;
+}
+
+#chat-message > .room > .messages .part {
+    color: darkred;
+}
+
 #chat-message > .room > .users {
     grid-area: users;
     padding: 8px;
     overflow-x: hidden;
     overflow-y: auto;
+}
+
+#chat-message > .room > .users > .user {
+    overflow: hidden;
+}
+
+#chat-message > .room > .users > .user.you {
+    font-weight: bold;
 }
 
 #chat-content > .message {
