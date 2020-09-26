@@ -6,7 +6,7 @@
         // Status of the ui: closed, opening, open.
         _status: 'closed',
 
-        start: function(parent) {
+        start: function(parent, onerror) {
             let ctx = this;
             if (this._status === 'closed') {
                 this._roomsSidebar = $('<div/>').addClass('rooms-sidebar');
@@ -25,6 +25,7 @@
                 Chat.Incoming.onlist = ctx._listRooms.bind(ctx);
                 Chat.Incoming.onmessage = ctx._messageReceived.bind(ctx);
                 Chat.Incoming.onhistorymessage = ctx._historyMessageReceived.bind(ctx);
+                Chat.Incoming.onerror = onerror;
             }
         },
 
@@ -47,6 +48,9 @@
                     }
                 }
             });
+            this._messageBarText.keyup(function(e) {
+                if (e.which === 13) ctx._messageBarButton.click();
+            })
         },
 
         _initServerLogsAndSidebar: function() {
@@ -202,6 +206,7 @@
                 Chat.Incoming.onlist = function(roomList) {};
                 Chat.Incoming.onmessage = function(roomName, stamp, username, you, body) {};
                 Chat.Incoming.onhistorymessage = function(roomName, stamp, username, you, body) {};
+                Chat.Incoming.onerror = function(e) {};
                 this._parent.empty();
                 this._parent = null;
                 this._rooms = {};
