@@ -33,7 +33,7 @@
             let ctx = this;
             this._messageBarText = $('<input type="text" placeholder="Write your message..." />');
             this._messageBar.append(this._messageBarText);
-            this._messageBarButton = $('<button value="Send" />');
+            this._messageBarButton = $('<button class="btn btn-sm btn-primary">Send</button>').css('font-size', '10px');
             this._messageBar.append(this._messageBarButton);
             this._messageBarButton.click(function() {
                 let value = ctx._messageBarText.val().trim();
