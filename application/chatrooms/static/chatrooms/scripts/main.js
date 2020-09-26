@@ -99,7 +99,7 @@
 
             if (ctx._socket) throw new ChatError("The connection is already established", "already-connected");
 
-            let connection = new WebSocket("/ws/chat?token=" + ctx.getToken());
+            let connection = new WebSocket("ws:///ws/chat/?token=" + ctx.getToken());
             connection.onopen = function(e) {
                 ctx._socket = connection;
             };
@@ -211,7 +211,10 @@
         // Pre-sets the token on each ajax request, if available.
         $(document).ajaxSend(function(e, xhr, _) {
             let token = Chat.getToken();
-            if (token) xhr.setRequestHeader('Authorization', token);
+            if (token) xhr.setRequestHeader('Authorization', 'Token ' + token);
+
+            let csrfToken = Cookies.get('csrftoken');
+            xhr.setRequestHeader('X-CSRFToken', csrfToken);
         });
     });
 })(jQuery);
