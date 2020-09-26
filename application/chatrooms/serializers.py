@@ -30,6 +30,13 @@ class UserCreateSerializer(ModelSerializer):
 
         return attrs
 
+    def create(self, validated_data):
+        password = validated_data.pop("password")
+        instance = super().create(validated_data)
+        instance.set_password(password)
+        instance.save()
+        return instance
+
 
 class UserLoginSerializer(Serializer):
     """
