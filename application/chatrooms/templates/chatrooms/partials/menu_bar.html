@@ -1,12 +1,9 @@
 {% load static %}
-<nav class="navbar navbar-expand-lg navbar-light bg-light">
+<nav class="navbar navbar-expand-sm navbar-light bg-light">
     <img class="navbar-brand" src="{% static 'chatrooms/images/logo.png' %}" />
-    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-        <span class="navbar-toggler-icon"></span>
-    </button>
     <div class="collapse navbar-collapse">
         <ul class="navbar-nav ml-auto">
-            <li id="logged-user-label" class="nav-item hidden">
+            <li id="logged-user-label" style="display: none" class="nav-item">
                 You're logged in as <span></span>. <a id="do-logout">Logout</a>
             </li>
             <li id="anonymous-user-label" class="nav-item">
@@ -16,13 +13,15 @@
     </div>
 </nav>
 <script type="text/javascript">
-    function updateNavBar(username) {
-        $('#anonymous-user-label').addClass('hidden');
-        $('#logged-user-label span').text(username);
-        $('#logged-user-label').removeClass('hidden');
-    }
+    (function($) {
+        window.updateNavBar = function(username) {
+            $('#anonymous-user-label').hide();
+            $('#logged-user-label span').text(username);
+            $('#logged-user-label').show();
+        };
 
-    function onLogoutClick(callback) {
-        $('#do-logout').click(callback);
-    }
+        window.onLogoutClick = function(callback) {
+            $('#do-logout').click(callback);
+        };
+    })(jQuery);
 </script>

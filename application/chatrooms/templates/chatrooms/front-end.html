@@ -20,8 +20,8 @@
                     <a id="register-link" href="#" role="button" class="btn">Register</a>
                     {% bootstrap_messages %}
                     <div id="login-form">
-                        <form action="{% url 'chatrooms:login' %}" method="post" class="asynchronous"
-                              enctype="application/json">
+                        <form method="post" novalidate>
+                            <div class="alert alert-danger" style="display: none" role="alert"></div>
                             {% csrf_token %}
                             {% bootstrap_form login %}
                             {% buttons %}
@@ -34,8 +34,8 @@
                         </form>
                     </div>
                     <div id="register-form" style="display:none">
-                        <form action="{% url 'chatrooms:register' %}" method="post" class="asynchronous"
-                              enctype="application/json">
+                        <form method="post" novalidate>
+                            <div class="alert alert-danger hidden" style="display: none" role="alert"></div>
                             {% csrf_token %}
                             {% bootstrap_form register %}
                             {% buttons %}
@@ -58,10 +58,83 @@
                                     $('#login-form').hide();
                                     $('#register-form').show();
                                 });
+
+                                $("#login-form form").submit(function(e) {
+                                    e.preventDefault();
+                                    let obj = $(this).serializeObject();
+
+                                    Chat.login(obj.username, obj.password).done(function(data) {
+                                        let token = Chat.getToken();
+                                        if (token) {
+                                            Chat.logout().always(function() {
+                                                updateUI(data.token);
+                                            });
+                                        } else {
+                                            updateUI(data.token);
+                                        }
+                                    }).fail(function(xhr) {
+                                        console.log("Login failure:", data.status);
+                                    });
+                                    return false;
+                                });
+                                $("#register-form form").submit(function(e) {
+                                    e.preventDefault();
+                                    let obj = $(this).serializeObject();
+
+                                    if (obj.password !== obj.password_confirm) {
+                                        $("#register-form .alert").text("Password do not match");
+                                        return false;
+                                    }
+
+                                    Chat.register(obj.username, obj.email, obj.password).done(function(data) {
+                                        Chat.login(obj.username, obj.password).done(function(data) {
+                                            console.log("Login result after register:", data);
+                                            let token = Chat.getToken();
+                                            if (token) {
+                                                Chat.logout().always(function() {
+                                                    updateUI(null);
+                                                    updateUI(data.token);
+                                                });
+                                            } else {
+                                                updateUI(data.token);
+                                            }
+                                        });
+                                    }).fail(function(xhr) {
+                                        console.log("Register failure:", data.status);
+                                    });
+                                    return false;
+                                });
                             });
                         })(jQuery);
                     </script>
                 </div>
+                <div id="chat-content">
+
+                </div>
+                <script type="text/javascript">
+                    (function($) {
+                        window.updateUI = function(token) {
+                            if (token) {
+                                // Set new token, request profile, and get user.
+                                Chat.setToken(token);
+                                Chat.me().done(function(data) {
+                                    updateNavBar(data.username);
+                                });
+                            } else {
+                                Chat.clearToken();
+                                updateNavBar(null);
+                            }
+                        };
+
+                        $(function() {
+                            onLogoutClick(function() {
+                                Chat.logout().always(function() {
+                                    updateUI(null);
+                                });
+                            });
+                        })
+                    })(jQuery);
+                </script>
             </div>
         </div>
     </body>
