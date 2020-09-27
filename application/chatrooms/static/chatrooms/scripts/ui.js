@@ -35,6 +35,7 @@
                         onerror("A websocket error - check your console for more details");
                     }
                 };
+                Chat.connect();
             }
         },
 

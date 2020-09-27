@@ -42,6 +42,12 @@ class MessageAdmin(ModelAdmin):
     search_fields = ["content"]
     ordering = ["created_on"]
 
+    def has_add_permission(self, request):
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        return obj is None
+
 
 # Register your models here.
 site.register(Room, RoomAdmin)

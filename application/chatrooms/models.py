@@ -9,7 +9,10 @@ class Room(models.Model):
 
     created_on = models.DateTimeField(auto_now_add=True, editable=False)
     updated_on = models.DateTimeField(auto_now=True, editable=False)
-    name = models.CharField(max_length=50, validators=[RegexValidator("^[a-zA-Z][a-zA-Z0-9_]?(-[a-zA-Z0-9_]+)*$")])
+    name = models.CharField(max_length=50, validators=[RegexValidator("^[a-zA-Z][a-zA-Z0-9_]*?(-[a-zA-Z0-9_]+)*$")])
+
+    def __str__(self):
+        return self.name
 
 
 # User model: It will plainly be auth.User
