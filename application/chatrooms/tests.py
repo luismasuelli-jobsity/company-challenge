@@ -1,3 +1,6 @@
+import asyncio
+import json
+
 import pytest
 from channels.routing import URLRouter
 from django.contrib.auth.models import User
@@ -82,6 +85,56 @@ async def attempt_logout(token, expect=204):
     assert response.status_code == expect
 
 
+async def should_be_websocket_welcome(token):
+    """
+    Attempts a websocket channel connection and expects
+      to receive a MOTD.
+    :param token: The token to use.
+    """
+
+    communicator = make_communicator(token)
+    connected, _ = await communicator.connect()
+    assert connected
+    message = json.loads(await communicator.receive_from())
+    await communicator.disconnect()
+    assert message.get('type') == 'notification'
+    assert message.get('code') == 'api-motd'
+
+
+async def should_be_websocket_rejected_because_anonymous(token):
+    """
+    Attempts a websocket channel connection and expects
+      to receive a rejection because the user is not
+      logged in (invalid token).
+    :param token: The token to use.
+    """
+
+    communicator = make_communicator(token)
+    connected, _ = await communicator.connect()
+    assert connected
+    message = json.loads(await communicator.receive_from())
+    await communicator.disconnect()
+    assert message.get('type') == 'fatal'
+    assert message.get('code') == 'not-authenticated'
+
+
+async def should_be_websocket_rejected_because_duplicated(token):
+    """
+    Attempts a websocket channel connection and expects
+      to receive a rejection because the user is already
+      logged in and chatting.
+    :param token: The token to use.
+    """
+
+    communicator = make_communicator(token)
+    connected, _ = await communicator.connect()
+    assert connected
+    message = json.loads(await communicator.receive_from())
+    await communicator.disconnect()
+    assert message.get('type') == 'fatal'
+    assert message.get('code') == 'already-chatting'
+
+
 @pytest.fixture()
 async def rooms():
     """
@@ -99,7 +152,7 @@ async def rooms():
 
 @pytest.mark.asyncio
 @pytest.mark.django_db
-async def test_chatrooms(rooms):
+async def test_chatrooms_accounts(rooms):
     """
     Tests the whole chatrooms interaction, given a valid token, with
       several simultaneous users.
@@ -135,6 +188,30 @@ async def test_chatrooms(rooms):
     for name in ["alice", "bob", "carl", "david"]:
         await attempt_profile(tokens[name])
 
-    ####################################################
-    #########
-    ####################################################
+    ###################################################
+    # Now testing the websockets side of the session. #
+    ###################################################
+
+    # The four still-valid tokens should connect with no issue.
+    for name in ["alice", "bob", "carl", "david"]:
+        await should_be_websocket_welcome(tokens[name])
+
+    # The other two, should receive a not-authenticated error.
+    for name in ["erin", "frank"]:
+        await should_be_websocket_rejected_because_anonymous(tokens[name])
+
+    # Now alice connects and, in the meantime, she should fail
+    # to connect again, simultaneously.
+    alice_communicator = make_communicator(tokens['alice'])
+    alice_connected, _ = await alice_communicator.connect()
+    motd_message = json.loads(await alice_communicator.receive_from())
+    assert alice_connected
+    await should_be_websocket_rejected_because_duplicated(tokens['alice'])
+
+    # Now we destroy the session for alice via logout.
+    await attempt_logout(tokens['alice'])
+    message = json.loads(await alice_communicator.receive_from())
+    # A message will be received: logged-out
+    assert message.get('type') == 'notification'
+    assert message.get('code') == 'logged-out'
+    await alice_communicator.disconnect()
