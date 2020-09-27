@@ -81,7 +81,7 @@ Clicking a room link will lead the user to a room, displaying:
 
 So far, issuing commands does nothing. To make them work, a custom API client or bot must exist.
 
-Manual API test
+API flow & docs
 ---------------
 
 If you want to use a custom client to connect to this API, you will need two components:
