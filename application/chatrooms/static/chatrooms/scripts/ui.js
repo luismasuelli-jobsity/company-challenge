@@ -114,11 +114,11 @@
 
             this._rooms[roomName].find(".messages").append(
                 $('<div/>').append(
-                    $('<div class="stamp" />').text(stamp)
+                    $('<span class="stamp" />').text(stamp)
                 ).append(
-                    $('<div class="author" />').text(username + (you ? ' (you)' : ''))
+                    $('<span class="author" />').text(username + (you ? ' (you)' : ''))
                 ).append(
-                    $('<div class="join" />').text('joined the room')
+                    $('<span class="join" />').text('joined the room')
                 )
             );
         },
@@ -133,11 +133,11 @@
             } else {
                 this._rooms[roomName].find(".messages").append(
                     $('<div/>').append(
-                        $('<div class="stamp" />').text(stamp)
+                        $('<span class="stamp" />').text(stamp)
                     ).append(
-                        $('<div class="author" />').text(username + (you ? ' (you)' : ''))
+                        $('<span class="author" />').text(username + (you ? ' (you)' : ''))
                     ).append(
-                        $('<div class="part" />').text('left the room')
+                        $('<span class="part" />').text('left the room')
                     )
                 );
             }
@@ -147,11 +147,11 @@
         _commandReceived: function(roomName, stamp, username, you, command, payload) {
             this._rooms[roomName].find(".messages").append(
                 $('<div/>').append(
-                    $('<div class="stamp" />').text(stamp)
+                    $('<span class="stamp" />').text(stamp)
                 ).append(
-                    $('<div class="author" />').text(username + (you ? ' (you)' : ''))
+                    $('<span class="author" />').text(username + (you ? ' (you)' : ''))
                 ).append(
-                    $('<div class="part" />').text("/" + command + '=' + payload)
+                    $('<span class="part" />').text("/" + command + '=' + payload)
                 )
             );
         },
@@ -160,11 +160,11 @@
         _messageReceived: function(roomName, stamp, username, you, body) {
             this._rooms[roomName].find(".messages").append(
                 $('<div/>').append(
-                    $('<div class="stamp" />').text(stamp)
+                    $('<span class="stamp" />').text(stamp)
                 ).append(
-                    $('<div class="author" />').text(username + (you ? ' (you)' : ''))
+                    $('<span class="author" />').text(username + (you ? ' (you)' : ''))
                 ).append(
-                    $('<div class="part" />').text(body)
+                    $('<span class="part" />').text(body)
                 )
             );
         },
@@ -173,24 +173,29 @@
         _historyMessageReceived: function(roomName, stamp, username, you, body) {
             this._rooms[roomName].find(".messages").prepend(
                 $('<div/>').append(
-                    $('<div class="stamp" />').text(stamp)
+                    $('<span class="stamp" />').text(stamp)
                 ).append(
-                    $('<div class="author" />').text(username + (you ? ' (you)' : ''))
+                    $('<span class="author" />').text(username + (you ? ' (you)' : ''))
                 ).append(
-                    $('<div class="part" />').text(body)
+                    $('<span class="part" />').text(body)
                 )
             );
         },
 
         // Handles receiving the rooms list.
         _listRooms: function(roomList) {
+            console.log("listing rooms:", roomList);
             let ctx = this;
             this._roomLinks = {};
             this._roomsSidebar.find('.room-item').remove();
             roomList.forEach(function(room) {
                 let roomLink = new $('<div class="room-item" />').text(room.name);
                 if (room.joined) roomLink.addClass('joined');
+                ctx._roomsSidebar.append(roomLink);
                 ctx._roomLinks[room.name] = roomLink;
+                roomLink.click(function() {
+                    Chat.join(room.name);
+                });
             })
         },
 
