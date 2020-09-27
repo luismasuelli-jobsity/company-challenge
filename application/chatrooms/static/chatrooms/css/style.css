@@ -79,6 +79,7 @@ html, body {
     overflow-x: hidden;
     overflow-y: auto;
     border-right: 1px solid gray;
+    border-left: 1px solid gray;
 }
 
 #chat-content > .rooms-sidebar > * {
@@ -175,6 +176,7 @@ html, body {
     overflow-y: auto;
     font-size: 12px;
     border-left: 1px solid gray;
+    border-right: 1px solid gray;
 }
 
 #chat-content > .room > .users > .user {
