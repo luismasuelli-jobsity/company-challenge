@@ -121,7 +121,7 @@ async def bot(token, host, rooms):
 
 if __name__ == '__main__':
     print(">>> finbot: Starting")
-    host = os.environ.get('FINBOT_HOST', 'localhost:8000')
+    host = os.environ.get('FINBOT_HOST', '') or 'localhost:8000'
     response = requests.post('http://%s/login' % host, json={
         "username": os.environ['FINBOT_USERNAME'],
         "password": os.environ['FINBOT_PASSWORD']
