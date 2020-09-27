@@ -19,6 +19,7 @@ factory = APIRequestFactory()
 
 
 USERS = ["alice", "bob", "carl", "david", "erin", "frank"]
+ROOMS = ['friends', 'family', 'stockmarket', 'forex']
 
 
 def make_communicator(token):
@@ -95,7 +96,7 @@ async def should_be_websocket_welcome(token):
     communicator = make_communicator(token)
     connected, _ = await communicator.connect()
     assert connected
-    message = json.loads(await communicator.receive_from())
+    message = await communicator.receive_json_from()
     await communicator.disconnect()
     assert message.get('type') == 'notification'
     assert message.get('code') == 'api-motd'
@@ -112,7 +113,7 @@ async def should_be_websocket_rejected_because_anonymous(token):
     communicator = make_communicator(token)
     connected, _ = await communicator.connect()
     assert connected
-    message = json.loads(await communicator.receive_from())
+    message = await communicator.receive_json_from()
     await communicator.disconnect()
     assert message.get('type') == 'fatal'
     assert message.get('code') == 'not-authenticated'
@@ -129,7 +130,7 @@ async def should_be_websocket_rejected_because_duplicated(token):
     communicator = make_communicator(token)
     connected, _ = await communicator.connect()
     assert connected
-    message = json.loads(await communicator.receive_from())
+    message = await communicator.receive_json_from()
     await communicator.disconnect()
     assert message.get('type') == 'fatal'
     assert message.get('code') == 'already-chatting'
@@ -204,14 +205,136 @@ async def test_chatrooms_accounts(rooms):
     # to connect again, simultaneously.
     alice_communicator = make_communicator(tokens['alice'])
     alice_connected, _ = await alice_communicator.connect()
-    motd_message = json.loads(await alice_communicator.receive_from())
+    _ = await alice_communicator.receive_json_from()
     assert alice_connected
     await should_be_websocket_rejected_because_duplicated(tokens['alice'])
 
     # Now we destroy the session for alice via logout.
     await attempt_logout(tokens['alice'])
-    message = json.loads(await alice_communicator.receive_from())
+    message = await alice_communicator.receive_json_from()
     # A message will be received: logged-out
     assert message.get('type') == 'notification'
     assert message.get('code') == 'logged-out'
+    await alice_communicator.disconnect()
+
+
+@pytest.mark.asyncio
+@pytest.mark.django_db
+async def test_chatroom_commands():
+    """
+    Tests all the commands exchanged via the chatrooms.
+    This includes double-join and double-part.
+    """
+
+    # Login all the users.
+    tokens = {}
+    for name in USERS:
+        username = name
+        password = name * 2 + '$12345'
+        tokens[name] = await attempt_login(username, password)
+
+    # Alice will:
+    # 1. Connect and retrieve MOTD.
+    # 2. List rooms, and expect the four in the example.
+    # 3. Join "family" room, and receive a success.
+    # 4. List rooms, and expect the four ones, with "family" having "joined": true.
+    # 3. Join "family" room, and receive an error.
+    # 4. List rooms, and expect the four ones, with "family" having "joined": true.
+    alice_communicator = make_communicator(tokens['alice'])
+    alice_connected, _ = await alice_communicator.connect()
+    motd = await alice_communicator.receive_json_from()
+    assert motd['type'] == 'notification'
+    assert motd['code'] == 'api-motd'
+    await alice_communicator.send_json_to({'type': 'list'})
+    list_ = await alice_communicator.receive_json_from()
+    assert list_['type'] == 'notification'
+    assert list_['code'] == 'list'
+    assert list_['list'] == [{'name': 'family', 'joined': False}, {'name': 'forex', 'joined': False}, {'name': 'friends', 'joined': False}, {'name': 'stockmarket', 'joined': False}]
+    await alice_communicator.send_json_to({'type': 'join', 'room_name': 'family'})
+    joined = await alice_communicator.receive_json_from()
+    assert joined['type'] == 'room:notification'
+    assert joined['code'] == 'joined'
+    assert joined['user'] == 'alice'
+    assert joined['you']
+    assert joined['room_name'] == 'family'
+    await alice_communicator.send_json_to({'type': 'list'})
+    list_ = await alice_communicator.receive_json_from()
+    assert list_['type'] == 'notification'
+    assert list_['code'] == 'list'
+    assert list_['list'] == [{'name': 'family', 'joined': True}, {'name': 'forex', 'joined': False}, {'name': 'friends', 'joined': False}, {'name': 'stockmarket', 'joined': False}]
+    await alice_communicator.send_json_to({'type': 'join', 'room_name': 'family'})
+    error = await alice_communicator.receive_json_from()
+    assert error['type'] == 'error'
+    assert error['code'] == 'room:already-joined'
+    assert error['details']['name'] == 'family'
+    await alice_communicator.send_json_to({'type': 'list'})
+    list_ = await alice_communicator.receive_json_from()
+    assert list_['type'] == 'notification'
+    assert list_['code'] == 'list'
+    assert list_['list'] == [{'name': 'family', 'joined': True}, {'name': 'forex', 'joined': False}, {'name': 'friends', 'joined': False}, {'name': 'stockmarket', 'joined': False}]
+    # Bob will:
+    # 1. Connect and retrieve MOTD.
+    # 2. Join "family" room, and receive a success.
+    # 3. Send a message in the "family" room: "Hello Alice", and receive a success.
+    # 4. Leave the room, and receive a success.
+    # 5. Leave the room, and receive an error.
+    # 6. Disconnect.
+    # Alice will:
+    # 1. Receive the "Bob joined" message.
+    # 2. Receive the "Hello Alice" message.
+    # 3. Receive the "Bob left" message.
+    # ~~ Bob interactions ~~
+    bob_communicator = make_communicator(tokens['bob'])
+    bob_connected, _ = await bob_communicator.connect()
+    motd = await bob_communicator.receive_json_from()
+    assert motd['type'] == 'notification'
+    assert motd['code'] == 'api-motd'
+    await bob_communicator.send_json_to({'type': 'join', 'room_name': 'family'})
+    joined = await bob_communicator.receive_json_from()
+    assert joined['type'] == 'room:notification'
+    assert joined['code'] == 'joined'
+    assert joined['user'] == 'bob'
+    assert joined['you']
+    assert joined['room_name'] == 'family'
+    await bob_communicator.send_json_to({'type': 'message', 'room_name': 'family', 'body': 'Hello Alice'})
+    message = await bob_communicator.receive_json_from()
+    assert message['type'] == 'room:notification'
+    assert message['code'] == 'message'
+    assert message['you']
+    assert message['user'] == 'bob'
+    assert message['room_name'] == 'family'
+    assert message['body'] == 'Hello Alice'
+    await bob_communicator.send_json_to({'type': 'part', 'room_name': 'family'})
+    parted = await bob_communicator.receive_json_from()
+    assert parted['type'] == 'room:notification'
+    assert parted['code'] == 'parted'
+    assert parted['user'] == 'bob'
+    assert parted['you']
+    assert parted['room_name'] == 'family'
+    await bob_communicator.send_json_to({'type': 'part', 'room_name': 'family'})
+    error = await bob_communicator.receive_json_from()
+    assert error['type'] == 'error'
+    assert error['code'] == 'room:not-joined'
+    assert error['details']['name'] == 'family'
+    await bob_communicator.disconnect()
+    # ~~ Alice interactions ~~
+    joined = await alice_communicator.receive_json_from()
+    assert joined['type'] == 'room:notification'
+    assert joined['code'] == 'joined'
+    assert joined['user'] == 'bob'
+    assert not joined['you']
+    assert joined['room_name'] == 'family'
+    message = await alice_communicator.receive_json_from()
+    assert message['type'] == 'room:notification'
+    assert message['code'] == 'message'
+    assert not message['you']
+    assert message['user'] == 'bob'
+    assert message['room_name'] == 'family'
+    assert message['body'] == 'Hello Alice'
+    parted = await alice_communicator.receive_json_from()
+    assert parted['type'] == 'room:notification'
+    assert parted['code'] == 'parted'
+    assert parted['user'] == 'bob'
+    assert not parted['you']
+    assert parted['room_name'] == 'family'
     await alice_communicator.disconnect()
