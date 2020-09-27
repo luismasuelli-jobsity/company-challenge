@@ -59,6 +59,7 @@ html, body {
 
 #display {
     flex: 1;
+    max-height: calc(100vh - 90px);
     position: relative;
 }
 
@@ -142,7 +143,7 @@ html, body {
     grid-area: messages;
     padding: 8px;
     overflow-x: hidden;
-    overflow-y: auto;
+    overflow-y: scroll;
 }
 
 #chat-content > .room > .messages .stamp {
