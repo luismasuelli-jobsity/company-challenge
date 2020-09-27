@@ -6,7 +6,7 @@
         // Status of the ui: closed, opening, open.
         _status: 'closed',
 
-        start: function(parent, onerror) {
+        start: function(parent, onfatal) {
             let ctx = this;
             if (this._status === 'closed') {
                 this._roomsSidebar = $('<div/>').addClass('rooms-sidebar');
@@ -29,11 +29,11 @@
                 Chat.Incoming.onerror = ctx._errorReceived.bind(ctx);
                 Chat.Incoming.onfatal = function(code) {
                     if (code === "not-authenticated") {
-                        onerror("You're not authenticated");
+                        onfatal("You're not authenticated");
                     } else if (code === "already-chatting") {
-                        onerror("This account is already chatting");
+                        onfatal("This account is already chatting");
                     } else if (code === "websocket") {
-                        onerror("A websocket error - check your console for more details");
+                        onfatal("A websocket error - check your console for more details");
                     }
                 };
                 this._status = 'opening';
@@ -270,6 +270,7 @@
             this._rooms[''].append(
                 $('<div class="error" />').append("Error code: " + code + ' - details: ' + JSON.stringify(details))
             );
+            this._rooms[''].scrollTop(this._rooms[''].prop("scrollHeight"));
         },
 
         // Stops the socket.
