@@ -125,7 +125,7 @@ html, body {
     color: darkred;
 }
 
-#chat-message > .room {
+#chat-content > .room {
     grid-area: room;
     display: grid;
     font-size: 14px;
@@ -135,38 +135,38 @@ html, body {
         "messages users";
 }
 
-#chat-message > .room > .messages {
+#chat-content > .room > .messages {
     grid-area: messages;
     padding: 8px;
     overflow-x: hidden;
     overflow-y: auto;
 }
 
-#chat-message > .room > .messages .stamp {
+#chat-content > .room > .messages .stamp {
     color: gray;
     font-weight: bold;
     margin-right: 4px;
 }
 
-#chat-message > .room > .messages .author {
+#chat-content > .room > .messages .author {
     color: gray;
     font-weight: bold;
     margin-right: 4px;
 }
 
-#chat-message > .room > .messages .body {
+#chat-content > .room > .messages .body {
     color: black;
 }
 
-#chat-message > .room > .messages .join {
+#chat-content > .room > .messages .join {
     color: darkgreen;
 }
 
-#chat-message > .room > .messages .part {
+#chat-content > .room > .messages .part {
     color: darkred;
 }
 
-#chat-message > .room > .users {
+#chat-content > .room > .users {
     grid-area: users;
     padding: 8px;
     overflow-x: hidden;
@@ -174,11 +174,11 @@ html, body {
     font-size: 10px;
 }
 
-#chat-message > .room > .users > .user {
+#chat-content > .room > .users > .user {
     overflow: hidden;
 }
 
-#chat-message > .room > .users > .user.you {
+#chat-content > .room > .users > .user.you {
     font-weight: bold;
 }
 
