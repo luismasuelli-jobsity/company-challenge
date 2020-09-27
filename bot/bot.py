@@ -122,10 +122,18 @@ async def bot(token, host, rooms):
 if __name__ == '__main__':
     print(">>> finbot: Starting")
     host = os.environ.get('FINBOT_HOST', '') or 'localhost:8000'
-    response = requests.post('http://%s/login' % host, json={
-        "username": os.environ['FINBOT_USERNAME'],
-        "password": os.environ['FINBOT_PASSWORD']
-    })
+    try:
+        response = requests.post('http://%s/login' % host, json={
+            "username": os.environ['FINBOT_USERNAME'],
+            "password": os.environ['FINBOT_PASSWORD']
+        })
+    except KeyError:
+        print(">>> finbot: Misconfigured. Environment variables "
+              "FINBOT_USERNAME and FINBOT_PASSWORD are required. Terminating.")
+        os._exit(1)
+    except:
+        print(">>> finbot: Network error while trying to hit the /login url. Terminating.")
+        os._exit(1)
     if response.status_code != 200:
         print(">>> finbot: Login failed. Unexpected status code: %d. Terminating." % response.status_code)
         os._exit(1)
