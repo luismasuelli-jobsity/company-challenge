@@ -59,7 +59,11 @@
                 if (ctx._activeRoom) {
                     if (value[0] === '/') {
                         let parts = value.substr(1).split('=', 2);
-                        Chat.custom(ctx._activeRoom, value[0], value[1]);
+                        if (parts.length === 2) {
+                            Chat.custom(ctx._activeRoom, parts[0], parts[1]);
+                        } else {
+                            Chat.talk(ctx._activeRoom, value)
+                        }
                     } else {
                         Chat.talk(ctx._activeRoom, value);
                     }
@@ -182,7 +186,7 @@
                 ).append(
                     $('<span class="author" />').text(username + (you ? ' (you)' : ''))
                 ).append(
-                    $('<span class="message" />').text("/" + command + '=' + payload)
+                    $('<span class="command" />').text("/" + command + '=' + payload)
                 )
             );
             messages.scrollTop(messages.prop("scrollHeight"));

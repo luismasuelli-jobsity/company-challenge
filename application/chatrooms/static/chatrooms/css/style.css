@@ -179,6 +179,10 @@ html, body {
     color: darkred;
 }
 
+#chat-content > .room > .messages .command {
+    color: purple;
+}
+
 #chat-content > .room > .users {
     grid-area: users;
     padding: 8px;

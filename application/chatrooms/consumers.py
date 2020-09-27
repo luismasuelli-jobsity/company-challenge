@@ -375,7 +375,7 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
 
         await self.channel_layer.group_send(room_name, {
             "type": "broadcast_custom",
-            "user": self.scope["user"].username, "room_name": room_name, "code": code, "payload": payload,
+            "user": self.scope["user"].username, "room_name": room_name, "command": code, "payload": payload,
             "stamp": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         })
 
