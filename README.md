@@ -170,3 +170,41 @@ And may receive the following messages from the server:
    - It will have the `you` flag in true, if the user who posted it is the current one.
    - Bots will typically pay attention to these messages.
 
+Bot
+---
+
+You can run the bot included in this repository to answer stock queries. There are two ways to run this both:
+
+ - As a python script:
+   - Pros: You need no additional docker setup for networking.
+   - Cons: You need to manually install the dependencies in `requirements.txt` in a virtualenv.
+ - As a docker image:
+   - Pros: Running and ensuring dependencies is straightforward.
+   - Cons: You need to configure an external network for both the docker-compose file for the application
+           or constrain yourself to configure an external, public url, where you have the server application.
+
+To work with the bot, first ensure you create a standard user for the bot (by manual registration or django admin).
+
+The related environment variables for the bot are:
+
+ - `FINBOT_HOST`: An optional host. If omitted or empty, localhost:8000 will be used.
+ - `FINBOT_USERNAME`: The username for the bot account.
+ - `FINBOT_PASSWORD`: The password for the bot account.
+ - `FINBOT_ROOMS`: A colon-separated list of existing rooms for the bot to connect to.
+   This environment variable may be absent or empty. In this case, the bot will list
+   all the rooms and join all of them.
+
+As long as the host is reachable, the credentials are valid, at least one room is valid, and the account is not 
+already in-use, this bot will respond to commands like /stock=aapl.us or /stock=WIG and ignore other commands.
+
+To run the bot via command line, an example would be:
+
+```
+$ FINBOT_USERNAME=botuser FINBOT_PASSWORD=botpwassword FINBOT_ROOMS=investments python bot.py
+```
+
+To run the bot via docker, an example would be:
+
+```
+$ docker build . --tag=finbot:latest && docker run --name=my-bot-container -e FINBOT_USERNAME=botuser -e FINBOT_PASSWORD=botpwassword -e FINBOT_ROOMS=investments -e FINBOT_HOST=foo.bar.baz:8888 finbot:latest
+```
