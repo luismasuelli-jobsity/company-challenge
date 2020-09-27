@@ -16,9 +16,13 @@
                 this._messageBar = $('<div/>').addClass('message');
                 this._parent = parent;
                 this._parent.append(this._messageBar).append(this._roomsSidebar);
-                this._initServerLogsAndSidebar();
-                this._initMessageBar();
-                Chat.Incoming.onopen = function() { ctx._status = 'open'; };
+                Chat.Incoming.onopen = function() {
+                    ctx._status = 'open';
+                    ctx._initServerLogsAndSidebar();
+                    ctx._initMessageBar();
+                    // Also, manually invoke to retrieve the rooms list.
+                    Chat.list();
+                };
                 Chat.Incoming.oncustom = ctx._commandReceived.bind(ctx);
                 Chat.Incoming.onjoin = ctx._joinedRoom.bind(ctx);
                 Chat.Incoming.onpart = ctx._partedRoom.bind(ctx);
@@ -242,7 +246,11 @@
                         ctx._selectActiveRoom(room.name);
                     }
                 });
-            })
+            });
+            this._rooms[''].append(
+                $('<div class="info" />').append("Room list successfully updated")
+            );
+            this._rooms[''].scrollTop(this._rooms[''].prop("scrollHeight"));
         },
 
         // Handles receiving the users list.
