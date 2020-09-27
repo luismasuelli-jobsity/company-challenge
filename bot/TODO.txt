@@ -1,0 +1,17 @@
+A bot will have:
+
+ - Its own requirements.txt file, including:
+   - "requests" library.
+   - "https://websockets.readthedocs.io/en/stable/intro.html" this library.
+ - Its own python base image (same version of the application dockerfile).
+ - The following optional environment variables:
+   - FINBOT_USERNAME, by default "finbot".
+   - FINBOT_PASSWORD, by default "pa$$w0rd".
+   - FINBOT_ROOMS (a colon-separated list of rooms), by default '' which will connect to ALL rooms.
+ - What will it do (a single, dockerized, entry-point script):
+   - 1. Try to http login and get a token, or fail with log.
+   - 2. Try to connect to the server, with its token.
+     - Its lifecycle will attend all the commands and, when receiving a custom with command == "stock",
+       proceed with the whole logic.
+   - 3. All the interaction will be logged to stdout (both incoming and outgoing).
+   - 4. The lifecycle will end when the connection is closed.
