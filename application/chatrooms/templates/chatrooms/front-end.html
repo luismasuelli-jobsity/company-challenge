@@ -154,7 +154,7 @@
                 <div id="chat-content"></div>
                 <div id="error-content" style="display: none">
                     <div class="alert alert-danger center-y center-x">
-                        An error has occurred while on chat: <span></span>. <a id="do-reconnect" href="#" role="button">Try again</a>
+                        An error has occurred while on chat: <span></span>. <a id="do-retry" href="#" role="button">Try again</a>
                     </div>
                 </div>
                 <script type="text/javascript">
@@ -229,6 +229,10 @@
 
                             // Refreshing the ui for the first time.
                             updateUI(Chat.getToken());
+
+                            $("#do-retry").click(function() {
+                                window.location.reload();
+                            });
 
                             $(document).on("unload", function() {
                                 Chat.stop();
