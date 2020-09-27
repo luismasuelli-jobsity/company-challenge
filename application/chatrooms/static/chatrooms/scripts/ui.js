@@ -62,9 +62,9 @@
 
                 if (ctx._activeRoom) {
                     if (value[0] === '/') {
-                        let parts = value.substr(1).split('=', 2);
-                        if (parts.length === 2) {
-                            Chat.custom(ctx._activeRoom, parts[0], parts[1]);
+                        let parts = value.substr(1).split('=');
+                        if (parts.length >= 2) {
+                            Chat.custom(ctx._activeRoom, parts[0], parts.slice(1).join('='));
                         } else {
                             Chat.talk(ctx._activeRoom, value)
                         }
