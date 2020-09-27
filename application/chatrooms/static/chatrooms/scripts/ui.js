@@ -18,6 +18,7 @@
                 this._parent.append(this._messageBar).append(this._roomsSidebar);
                 this._initServerLogsAndSidebar();
                 this._initMessageBar();
+                Chat.Incoming.onopen = function() { ctx._status = 'open'; };
                 Chat.Incoming.oncustom = ctx._commandReceived.bind(ctx);
                 Chat.Incoming.onjoin = ctx._joinedRoom.bind(ctx);
                 Chat.Incoming.onpart = ctx._partedRoom.bind(ctx);
@@ -35,6 +36,7 @@
                         onerror("A websocket error - check your console for more details");
                     }
                 };
+                this._status = 'opening';
                 Chat.connect();
             }
         },
@@ -111,6 +113,13 @@
                 }
 
                 let room = $('<div class="room"><div class="messages"></div><div class="users"></div></div>');
+                room.append(
+                    $('<div class="caption"></div>').append("Room: " + roomName).append(
+                        $('<a href="#" style="margin-left: 8px">Leave</a>').click(function() {
+                            Chat.part(roomName)
+                        })
+                    )
+                );
                 room.hide();
                 this._parent.append(room);
                 this._rooms[roomName] = room;
@@ -124,7 +133,8 @@
             }
             this._refreshUsers(roomName);
 
-            this._rooms[roomName].find(".messages").append(
+            let messages = this._rooms[roomName].find(".messages");
+            messages.append(
                 $('<div/>').append(
                     $('<span class="stamp" />').text(stamp)
                 ).append(
@@ -133,6 +143,7 @@
                     $('<span class="join" />').text('joined the room')
                 )
             );
+            messages.scrollTop(messages.prop("scrollHeight"));
         },
 
         // Handles parting from a room.
@@ -140,10 +151,16 @@
             if (you) {
                 if (this._rooms[roomName]) {
                     this._rooms[roomName].remove();
+                    this._roomLinks[roomName].removeClass('joined');
                     delete this._rooms[roomName];
+                    this._selectActiveRoom('');
                 }
             } else {
-                this._rooms[roomName].find(".messages").append(
+                // Add the user to the users set of the room.
+                delete this._rooms[roomName].data('users')[username];
+                this._refreshUsers(roomName);
+                let messages = this._rooms[roomName].find(".messages");
+                messages.append(
                     $('<div/>').append(
                         $('<span class="stamp" />').text(stamp)
                     ).append(
@@ -152,12 +169,14 @@
                         $('<span class="part" />').text('left the room')
                     )
                 );
+                messages.scrollTop(messages.prop("scrollHeight"));
             }
         },
 
         // Handles receiving a custom command message.
         _commandReceived: function(roomName, stamp, username, you, command, payload) {
-            this._rooms[roomName].find(".messages").append(
+            let messages = this._rooms[roomName].find(".messages");
+            messages.append(
                 $('<div/>').append(
                     $('<span class="stamp" />').text(stamp)
                 ).append(
@@ -166,11 +185,13 @@
                     $('<span class="message" />').text("/" + command + '=' + payload)
                 )
             );
+            messages.scrollTop(messages.prop("scrollHeight"));
         },
 
         // Handles receiving a message.
         _messageReceived: function(roomName, stamp, username, you, body) {
-            this._rooms[roomName].find(".messages").append(
+            let messages = this._rooms[roomName].find(".messages");
+            messages.append(
                 $('<div/>').append(
                     $('<span class="stamp" />').text(stamp)
                 ).append(
@@ -179,13 +200,15 @@
                     $('<span class="message" />').text(body)
                 )
             );
+            messages.scrollTop(messages.prop("scrollHeight"));
         },
 
         // Handles receiving a history message.
-        _historyMessageReceived: function(roomName, messages) {
+        _historyMessageReceived: function(roomName, messagesList) {
             let ctx = this;
-            messages.forEach(function(message) {
-                ctx._rooms[roomName].find(".messages").prepend(
+            let messages = this._rooms[roomName].find(".messages");
+            messagesList.forEach(function(message) {
+                messages.prepend(
                     $('<div/>').append(
                         $('<span class="stamp" />').text(message.stamp)
                     ).append(
@@ -195,6 +218,7 @@
                     )
                 );
             });
+            messages.scrollTop(messages.prop("scrollHeight"));
         },
 
         // Handles receiving the rooms list.

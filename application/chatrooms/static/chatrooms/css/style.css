@@ -134,9 +134,18 @@ html, body {
     display: grid;
     font-size: 14px;
     grid-template-columns: calc(100% - 200px) 200px;
-    grid-template-rows: 100%;
+    grid-template-rows: 38px calc(100% - 38px);
     grid-template-areas:
+        "caption users"
         "messages users";
+}
+
+#chat-content > .room > .caption {
+    grid-area: caption;
+    font-size: 14px;
+    height: 38px;
+    padding: 8px;
+    border-bottom: 1px solid gray;
 }
 
 #chat-content > .room > .messages {

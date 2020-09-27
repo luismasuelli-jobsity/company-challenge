@@ -102,6 +102,7 @@
             let connection = new WebSocket("ws://" + window.location.host + "/ws/chat/?token=" + ctx.getToken());
             connection.onopen = function(e) {
                 console.log("Connection started...", e);
+                ctx.Incoming.onopen();
                 ctx._socket = this;
             };
             connection.onmessage = function(e) {
@@ -208,6 +209,7 @@
         // Each callback must be assigned on its own.
 
         Incoming: {
+            onopen: function() {},
             onerror: function(code, details) {},
             onfatal: function(code) {},
             onlist: function(roomList) {},
