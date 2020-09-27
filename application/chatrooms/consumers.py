@@ -150,7 +150,7 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
             elif type_ == "custom":
                 await self.receive_custom(content.get('room_name'), content.get('command'), content.get('payload'))
             else:
-                await self.send_json({"type": "error", "code": "unsupported-command", "details": {"content": type_}})
+                await self.send_json({"type": "error", "code": "unsupported-command", "details": {"type": type_}})
 
     async def receive_help(self):
         """
@@ -255,8 +255,8 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
 
         return [
             {"stamp": message.created_on.strftime("%Y-%m-%d %H:%M:%S"),
-             "user": message.user.username, "room_name": room_name,
-             "body": message.content, "you": message.user == self.scope["user"]}
+             "user": message.user.username, "body": message.content,
+             "you": message.user == self.scope["user"]}
             for message in await database_sync_to_async(lambda: list(Message.objects.select_related('user').filter(room__name=room_name).order_by("-created_on")[:50]))()
         ]
 
@@ -403,7 +403,7 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
 
         if room_name in self.rooms:
             command = command.strip()
-            if command != '':
+            if command != '' and payload != '':
                 await self._broadcast_custom(room_name, command, payload)
             else:
                 await self.send_json({"type": "error", "code": "room:empty-custom"})
