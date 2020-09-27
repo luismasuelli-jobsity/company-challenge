@@ -95,7 +95,9 @@ If you want to use a custom client to connect to this API, you will need two com
    - GET /profile: Passing an `Authorization: Token foo...` header will attempt to retrieve the profile data. When valid,
      a `200`-status response will carry a `{"username": "youruser", "email": "your@email"}` payload.
  - A Websockets client, provided it is fully compatible with the default browser protocols. All the messages being sent
-   via that websocket are of text format, and will have a json structure.
+   via that websocket are of text format, and will have a json structure. To build a websocket request, two alternatives exist:
+   - Connect to `ws://localhost:8000/ws/chat?token=foo...`.
+   - Connect to `ws://localhost:8000/ws/chat` with a `Authorization: Token foo...` header.
 
 A client websocket can send the following messages (as string values) once it is connected:
 
