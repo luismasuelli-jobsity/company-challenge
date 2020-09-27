@@ -102,8 +102,8 @@
             let connection = new WebSocket("ws://" + window.location.host + "/ws/chat/?token=" + ctx.getToken());
             connection.onopen = function(e) {
                 console.log("Connection started...", e);
-                ctx.Incoming.onopen();
                 ctx._socket = this;
+                ctx.Incoming.onopen();
             };
             connection.onmessage = function(e) {
                 let message = JSON.parse(e.data);
