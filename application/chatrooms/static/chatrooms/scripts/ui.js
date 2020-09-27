@@ -46,15 +46,20 @@
             this._messageBarButton = $('<button class="btn btn-sm btn-primary">Send</button>').css('font-size', '10px');
             this._messageBar.append(this._messageBarButton);
             this._messageBarButton.click(function() {
+                // Sends the text only if the non-server tab is
+                // chosen and only if the trimmed text is not empty.
+                // The textbox is then cleared.
+
                 let value = ctx._messageBarText.val().trim();
+                ctx._messageBarText.val('');
                 if (!value) return;
 
-                if (this._activeRoom) {
+                if (ctx._activeRoom) {
                     if (value[0] === '/') {
                         let parts = value.substr(1).split('=', 2);
-                        Chat.custom(this._activeRoom, value[0], value[1]);
+                        Chat.custom(ctx._activeRoom, value[0], value[1]);
                     } else {
-                        Chat.talk(this._activeRoom, value);
+                        Chat.talk(ctx._activeRoom, value);
                     }
                 }
             });
@@ -112,9 +117,12 @@
                 this._listUsers(roomName, status.users);
                 this._historyMessageReceived(roomName, status.messages);
                 this._selectActiveRoom(roomName);
+                this._roomLinks[roomName].addClass('joined');
+            } else {
+                // Add the user to the users set of the room.
+                this._rooms[roomName].data('users')[username] = false;
             }
-
-            this._roomLinks[roomName].addClass('joined');
+            this._refreshUsers(roomName);
 
             this._rooms[roomName].find(".messages").append(
                 $('<div/>').append(
@@ -175,12 +183,13 @@
 
         // Handles receiving a history message.
         _historyMessageReceived: function(roomName, messages) {
+            let ctx = this;
             messages.forEach(function(message) {
-                this._rooms[roomName].find(".messages").prepend(
+                ctx._rooms[roomName].find(".messages").prepend(
                     $('<div/>').append(
                         $('<span class="stamp" />').text(message.stamp)
                     ).append(
-                        $('<span class="author" />').text(message.username + (message.you ? ' (you)' : ''))
+                        $('<span class="author" />').text(message.user + (message.you ? ' (you)' : ''))
                     ).append(
                         $('<span class="message" />').text(message.body)
                     )
@@ -210,13 +219,25 @@
 
         // Handles receiving the users list.
         _listUsers: function(roomName, users) {
-            let usersList = this._rooms[roomName].find('.users');
-            usersList.empty();
+            let room = this._rooms[roomName];
+            let usersSet = {};
             users.forEach(function(user) {
-                let entry = $('<div class="user"/>').text(user.name);
-                if (user.you) entry.addClass("you");
+                usersSet[user.name] = users.you;
+            });
+            room.data('users', usersSet);
+        },
+
+        // Refreshes the users in the room.
+        _refreshUsers: function(roomName) {
+            let room = this._rooms[roomName];
+            let users = this._rooms[roomName].data('users');
+            let usersList = room.find('.users');
+            usersList.empty();
+            Object.keys(users).sort().forEach(function(username) {
+                let entry = $('<div class="user"/>').text(username);
+                if (users[username]) entry.addClass("you");
                 usersList.append(entry);
-            })
+            });
         },
 
         // Handles receiving an error.
