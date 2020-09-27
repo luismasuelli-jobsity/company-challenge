@@ -208,3 +208,12 @@ To run the bot via docker, an example would be:
 ```
 $ docker build . --tag=finbot:latest && docker run --name=my-bot-container -e FINBOT_USERNAME=botuser -e FINBOT_PASSWORD=botpwassword -e FINBOT_ROOMS=investments -e FINBOT_HOST=foo.bar.baz:8888 finbot:latest
 ```
+
+Unit tests
+----------
+
+Run this command for the unit tests (provided you already ran `$ docker-compose up`):
+
+```
+$ docker-compose exec -e DJANGO_SETTINGS_MODULE=application.settings server python -m pytest
+```
