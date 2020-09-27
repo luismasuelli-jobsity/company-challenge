@@ -123,11 +123,6 @@
                             case "users":
                                 ctx.Incoming.onusers(message.room_name);
                                 break;
-                            case "messages":
-                                message.messages.forEach(function(msg) {
-                                    ctx.Incoming.onhistorymessage(msg.room_name, msg.stamp, msg.user, msg.you, msg.body);
-                                });
-                                break;
                             case "message":
                                 ctx.Incoming.onmessage(message.room_name, message.stamp, message.user, message.you, message.body);
                                 break;
