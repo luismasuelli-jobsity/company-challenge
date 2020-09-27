@@ -249,7 +249,7 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
             {"stamp": message.created_on.strftime("%Y-%m-%d %H:%M:%S"),
              "user": message.user.username, "room_name": room_name,
              "body": message.content, "you": message.user == self.scope["user"]}
-            for message in await database_sync_to_async(lambda: list(Message.objects.order_by("-created_on")[:50]))()
+            for message in await database_sync_to_async(lambda: list(Message.objects.select_related('user').filter(room__name=room_name).order_by("-created_on")[:50]))()
         ]
 
     async def _get_room_users(self, room_name):
@@ -325,8 +325,8 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
 
         try:
             return await database_sync_to_async(lambda: Message.objects.create(room=Room.objects.get(
-                name=room_name, content=body[:512], user=self.scope["user"]
-            )))()
+                name=room_name
+            ), content=body[:512], user=self.scope["user"]))()
         except Room.DoesNotExist:
             logger.warning("Trying to store a message for non-existing room: " + room_name)
 
@@ -463,7 +463,7 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
         """
 
         username = event['user']
-        room_name = event['room']
+        room_name = event['room_name']
         body = event['body']
         stamp = event['stamp']
 
@@ -488,7 +488,7 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
         """
 
         username = event['user']
-        room_name = event['room']
+        room_name = event['room_name']
         command = event['command']
         payload = event['payload']
         stamp = event['stamp']
