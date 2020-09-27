@@ -1,5 +1,5 @@
 from channels.routing import ProtocolTypeRouter, URLRouter
-from application.routing.auth import TokenAuthMiddlewareStack
+from channels_authtoken import TokenAuthMiddlewareStack
 from chatrooms.routing import websocket_urlpatterns
 
 channels_router = ProtocolTypeRouter({
