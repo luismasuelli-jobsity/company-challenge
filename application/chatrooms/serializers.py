@@ -59,8 +59,8 @@ class UserLoginSerializer(Serializer):
         validated = super().validate(attrs)
         user = authenticate(**validated)
         if user is None:
-            raise ValidationError({
+            raise ValidationError(
                 'Username/Password mismatch', 'invalid'
-            })
+            )
         validated['user'] = user
         return validated
