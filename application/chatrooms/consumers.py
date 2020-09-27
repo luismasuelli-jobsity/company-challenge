@@ -170,6 +170,14 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
           - Sends "Hello everyone!" to the "making_friends" channel.
           - The channel must exist.
           - You must be already joined in the channel.
+        - {"type": "message", "room_name": "making_friends", "command": "foo", "payload": "bar"}
+          - Sends "a /foo=bar" command to the "making_friends" channel.
+          - The channel must exist.
+          - You must be already joined in the channel.
+        - {"type": "join", "room_name": "making_friends"}
+          - Joins the channel, if not already joined.
+        - {"type": "part", "room_name": "making_friends"}
+          - Leaves the channel, if already joined.
         """})
 
     async def receive_list(self):
