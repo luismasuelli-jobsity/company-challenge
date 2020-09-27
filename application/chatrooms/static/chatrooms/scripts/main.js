@@ -88,7 +88,6 @@
 
         // Utility function to send a json message.
         _send: function(obj) {
-            console.log("Sending...", obj);
             this._socket.send(JSON.stringify(obj));
         },
 
@@ -102,6 +101,7 @@
 
             let connection = new WebSocket("ws://" + window.location.host + "/ws/chat/?token=" + ctx.getToken());
             connection.onopen = function(e) {
+                console.log("Connection started...", e);
                 ctx._socket = this;
             };
             connection.onmessage = function(e) {
@@ -155,7 +155,6 @@
          * Disconnects the chat.
          */
         disconnect: function() {
-            console.log("Disconnecting...");
             if (!this._socket) throw new ChatError("The connection is not established", "not-connected");
         },
         /**
@@ -168,8 +167,6 @@
          * Requests a list of the available channels.
          */
         list: function() {
-            console.log("Current connection:", this);
-
             if (!this._socket) throw new ChatError("The connection is not established", "not-connected");
 
             this._send({type: "list"});

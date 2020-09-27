@@ -190,7 +190,6 @@
 
         // Handles receiving the rooms list.
         _listRooms: function(roomList) {
-            console.log("listing rooms:", roomList);
             let ctx = this;
             this._roomLinks = {};
             this._roomsSidebar.find('.room-item').remove();
