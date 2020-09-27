@@ -338,3 +338,139 @@ async def test_chatroom_commands():
     assert not parted['you']
     assert parted['room_name'] == 'family'
     await alice_communicator.disconnect()
+
+
+@pytest.mark.asyncio
+@pytest.mark.django_db
+async def test_chatroom_broadcast():
+    """
+    Test the actions of a user, in a room, and how is it reflected
+      to other users.
+    """
+
+    # Login all the users.
+    tokens = {}
+    for name in USERS:
+        username = name
+        password = name * 2 + '$12345'
+        tokens[name] = await attempt_login(username, password)
+
+    # Alice, Bob, Carl connect to the server.
+    communicators = {}
+    for name in ['alice', 'bob', 'carl']:
+        communicator = make_communicator(tokens[name])
+        communicators[name] = communicator
+        connected, _ = await communicator.connect()
+        assert connected
+        motd = await communicator.receive_json_from()
+        assert motd['type'] == 'notification'
+        assert motd['code'] == 'api-motd'
+        await communicator.send_json_to({'type': 'join', 'room_name': 'family'})
+        await asyncio.sleep(0.5)
+    # Alice expects 3 joins.
+    joined = await communicators['alice'].receive_json_from()
+    assert joined['type'] == 'room:notification'
+    assert joined['code'] == 'joined'
+    assert joined['user'] == 'alice'
+    assert joined['you']
+    assert joined['room_name'] == 'family'
+    joined = await communicators['alice'].receive_json_from()
+    assert joined['type'] == 'room:notification'
+    assert joined['code'] == 'joined'
+    assert joined['user'] == 'bob'
+    assert not joined['you']
+    assert joined['room_name'] == 'family'
+    joined = await communicators['alice'].receive_json_from()
+    assert joined['type'] == 'room:notification'
+    assert joined['code'] == 'joined'
+    assert joined['user'] == 'carl'
+    assert not joined['you']
+    assert joined['room_name'] == 'family'
+    # Bob expects 2 joins.
+    joined = await communicators['bob'].receive_json_from()
+    assert joined['type'] == 'room:notification'
+    assert joined['code'] == 'joined'
+    assert joined['user'] == 'bob'
+    assert joined['you']
+    assert joined['room_name'] == 'family'
+    joined = await communicators['bob'].receive_json_from()
+    assert joined['type'] == 'room:notification'
+    assert joined['code'] == 'joined'
+    assert joined['user'] == 'carl'
+    assert not joined['you']
+    assert joined['room_name'] == 'family'
+    # Carl expects 1 join.
+    joined = await communicators['carl'].receive_json_from()
+    assert joined['type'] == 'room:notification'
+    assert joined['code'] == 'joined'
+    assert joined['user'] == 'carl'
+    assert joined['you']
+    assert joined['room_name'] == 'family'
+    # Now Alice sends a "Hello guys" message, and bob and carl
+    # will read it.
+    await communicators['alice'].send_json_to({'type': 'message', 'room_name': 'family', 'body': 'Hello guys'})
+    message = await communicators['alice'].receive_json_from()
+    assert message['type'] == 'room:notification'
+    assert message['code'] == 'message'
+    assert message['you']
+    assert message['user'] == 'alice'
+    assert message['room_name'] == 'family'
+    assert message['body'] == 'Hello guys'
+    message = await communicators['bob'].receive_json_from()
+    assert message['type'] == 'room:notification'
+    assert message['code'] == 'message'
+    assert not message['you']
+    assert message['user'] == 'alice'
+    assert message['room_name'] == 'family'
+    assert message['body'] == 'Hello guys'
+    message = await communicators['carl'].receive_json_from()
+    assert message['type'] == 'room:notification'
+    assert message['code'] == 'message'
+    assert not message['you']
+    assert message['user'] == 'alice'
+    assert message['room_name'] == 'family'
+    assert message['body'] == 'Hello guys'
+    # Now they all leave the channel.
+    for name in ['alice', 'bob', 'carl']:
+        await communicators[name].send_json_to({'type': 'part', 'room_name': 'family'})
+        await asyncio.sleep(0.5)
+    # And they will receive all the part messages.
+    parted = await communicators['alice'].receive_json_from()
+    assert parted['type'] == 'room:notification'
+    assert parted['code'] == 'parted'
+    assert parted['user'] == 'alice'
+    assert parted['you']
+    assert parted['room_name'] == 'family'
+    parted = await communicators['bob'].receive_json_from()
+    assert parted['type'] == 'room:notification'
+    assert parted['code'] == 'parted'
+    assert parted['user'] == 'alice'
+    assert not parted['you']
+    assert parted['room_name'] == 'family'
+    parted = await communicators['bob'].receive_json_from()
+    assert parted['type'] == 'room:notification'
+    assert parted['code'] == 'parted'
+    assert parted['user'] == 'bob'
+    assert parted['you']
+    assert parted['room_name'] == 'family'
+    parted = await communicators['carl'].receive_json_from()
+    assert parted['type'] == 'room:notification'
+    assert parted['code'] == 'parted'
+    assert parted['user'] == 'alice'
+    assert not parted['you']
+    assert parted['room_name'] == 'family'
+    parted = await communicators['carl'].receive_json_from()
+    assert parted['type'] == 'room:notification'
+    assert parted['code'] == 'parted'
+    assert parted['user'] == 'bob'
+    assert not parted['you']
+    assert parted['room_name'] == 'family'
+    parted = await communicators['carl'].receive_json_from()
+    assert parted['type'] == 'room:notification'
+    assert parted['code'] == 'parted'
+    assert parted['user'] == 'carl'
+    assert parted['you']
+    assert parted['room_name'] == 'family'
+    # And the 3 will disconnect.
+    for name in ['alice', 'bob', 'carl']:
+        await communicator.disconnect()
