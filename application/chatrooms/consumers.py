@@ -69,6 +69,7 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
             return False
         elif user.id in self.USERS:
             logger.info(">> It is already connected with user: %d - closing" % user.id)
+            self.scope.pop("user", None)
             await self.send_json({"type": "fatal", "code": "already-chatting"}, True)
             return False
         else:
