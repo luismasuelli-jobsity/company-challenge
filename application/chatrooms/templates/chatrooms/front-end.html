@@ -225,6 +225,10 @@
 
                             // Refreshing the ui for the first time.
                             updateUI(Chat.getToken());
+
+                            $(document).on("unload", function() {
+                                Chat.stop();
+                            });
                         })
                     })(jQuery);
                 </script>

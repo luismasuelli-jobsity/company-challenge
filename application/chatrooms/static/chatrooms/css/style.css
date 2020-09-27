@@ -78,6 +78,7 @@ html, body {
     padding: 8px;
     overflow-x: hidden;
     overflow-y: auto;
+    border-right: 1px solid gray;
 }
 
 #chat-content > .rooms-sidebar > * {
@@ -102,6 +103,7 @@ html, body {
 
 #chat-content > .rooms-sidebar .room-item {
     color: black;
+    cursor: pointer;
     overflow: hidden;
 }
 
@@ -129,7 +131,7 @@ html, body {
     grid-area: room;
     display: grid;
     font-size: 14px;
-    grid-template-columns: calc(100% - 100px) 100px;
+    grid-template-columns: calc(100% - 200px) 200px;
     grid-template-rows: 100%;
     grid-template-areas:
         "messages users";
@@ -171,7 +173,8 @@ html, body {
     padding: 8px;
     overflow-x: hidden;
     overflow-y: auto;
-    font-size: 10px;
+    font-size: 12px;
+    border-left: 1px solid gray;
 }
 
 #chat-content > .room > .users > .user {

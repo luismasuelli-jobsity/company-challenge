@@ -134,7 +134,7 @@
                                 ctx.Incoming.oncustom(message.room_name, message.stamp, message.user, message.you, message.command, message.payload);
                                 break;
                             case "joined":
-                                ctx.Incoming.onjoin(message.room_name, message.stamp, message.user, message.you);
+                                ctx.Incoming.onjoin(message.room_name, message.stamp, message.user, message.you, message.status);
                                 break;
                             case "parted":
                                 ctx.Incoming.onpart(message.room_name, message.stamp, message.user, message.you);
@@ -218,7 +218,7 @@
             onhistorymessage: function(roomName, stamp, username, you, body) {},
             onmessage: function(roomName, stamp, username, you, body) {},
             oncustom: function(roomName, stamp, username, you, command, payload) {},
-            onjoin: function(roomName, stamp, username, you) {},
+            onjoin: function(roomName, stamp, username, you, status) {},
             onpart: function(roomName, stamp, username, you) {}
         }
     };
@@ -227,7 +227,6 @@
         // Pre-sets the token on each ajax request, if available.
         $(document).ajaxSend(function(e, xhr, opts) {
             let token = Chat.getToken();
-            console.log("Hitting url: " + opts.url + " using token: " + token);
             if (token) xhr.setRequestHeader('Authorization', 'Token ' + token);
 
             let csrfToken = Cookies.get('csrftoken');

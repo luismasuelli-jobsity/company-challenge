@@ -98,7 +98,7 @@
         },
 
         // Handles joining a room.
-        _joinedRoom: function(roomName, stamp, username, you) {
+        _joinedRoom: function(roomName, stamp, username, you, status) {
             if (you) {
                 if (this._rooms[roomName]) {
                     this._rooms[roomName].remove();
@@ -109,8 +109,12 @@
                 room.hide();
                 this._parent.append(room);
                 this._rooms[roomName] = room;
+                this._listUsers(roomName, status.users);
+                this._historyMessageReceived(roomName, status.messages);
                 this._selectActiveRoom(roomName);
             }
+
+            this._roomLinks[roomName].addClass('joined');
 
             this._rooms[roomName].find(".messages").append(
                 $('<div/>').append(
@@ -151,7 +155,7 @@
                 ).append(
                     $('<span class="author" />').text(username + (you ? ' (you)' : ''))
                 ).append(
-                    $('<span class="part" />').text("/" + command + '=' + payload)
+                    $('<span class="message" />').text("/" + command + '=' + payload)
                 )
             );
         },
@@ -164,22 +168,24 @@
                 ).append(
                     $('<span class="author" />').text(username + (you ? ' (you)' : ''))
                 ).append(
-                    $('<span class="part" />').text(body)
+                    $('<span class="message" />').text(body)
                 )
             );
         },
 
         // Handles receiving a history message.
-        _historyMessageReceived: function(roomName, stamp, username, you, body) {
-            this._rooms[roomName].find(".messages").prepend(
-                $('<div/>').append(
-                    $('<span class="stamp" />').text(stamp)
-                ).append(
-                    $('<span class="author" />').text(username + (you ? ' (you)' : ''))
-                ).append(
-                    $('<span class="part" />').text(body)
-                )
-            );
+        _historyMessageReceived: function(roomName, messages) {
+            messages.forEach(function(message) {
+                this._rooms[roomName].find(".messages").prepend(
+                    $('<div/>').append(
+                        $('<span class="stamp" />').text(message.stamp)
+                    ).append(
+                        $('<span class="author" />').text(message.username + (message.you ? ' (you)' : ''))
+                    ).append(
+                        $('<span class="message" />').text(message.body)
+                    )
+                );
+            });
         },
 
         // Handles receiving the rooms list.
@@ -194,7 +200,11 @@
                 ctx._roomsSidebar.append(roomLink);
                 ctx._roomLinks[room.name] = roomLink;
                 roomLink.click(function() {
-                    Chat.join(room.name);
+                    if (!ctx._rooms[room.name]) {
+                        Chat.join(room.name);
+                    } else {
+                        ctx._selectActiveRoom(room.name);
+                    }
                 });
             })
         },
@@ -223,7 +233,7 @@
             if (this._status !== 'closed') {
                 if (Chat.connected()) Chat.disconnect();
                 Chat.Incoming.oncustom = function(roomName, stamp, username, you, command, payload) {};
-                Chat.Incoming.onjoin = function(roomName, stamp, username, you) {};
+                Chat.Incoming.onjoin = function(roomName, stamp, username, you, status) {};
                 Chat.Incoming.onpart = function(roomName, stamp, username, you) {};
                 Chat.Incoming.onusers = function(roomName, users) {};
                 Chat.Incoming.onlist = function(roomList) {};
