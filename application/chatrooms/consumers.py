@@ -279,7 +279,7 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
         :param room_name: The name of the room to join.
         """
 
-        if not self._expect_types([(room_name, str)]):
+        if not await self._expect_types([(room_name, str)]):
             return
 
         try:
@@ -313,7 +313,7 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
         :param room_name: The name of the room to part from.
         """
 
-        if not self._expect_types([(room_name, str)]):
+        if not await self._expect_types([(room_name, str)]):
             return
 
         self.rooms = getattr(self, 'rooms', set())
@@ -361,7 +361,7 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
         :param body: The message body.
         """
 
-        if not self._expect_types([(room_name, str), (body, str)]):
+        if not await self._expect_types([(room_name, str), (body, str)]):
             return
 
         if room_name in self.rooms:
@@ -399,7 +399,7 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
         :param payload: The payload data.
         """
 
-        if not self._expect_types([(room_name, str), (command, str), (payload, str)]):
+        if not await self._expect_types([(room_name, str), (command, str), (payload, str)]):
             return
 
         if room_name in self.rooms:
