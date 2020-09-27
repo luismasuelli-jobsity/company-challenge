@@ -33,11 +33,11 @@
                 Chat.Incoming.onerror = ctx._errorReceived.bind(ctx);
                 Chat.Incoming.onfatal = function(code) {
                     if (code === "not-authenticated") {
-                        onfatal("You're not authenticated");
+                        onfatal(code, "You're not authenticated");
                     } else if (code === "already-chatting") {
-                        onfatal("This account is already chatting");
+                        onfatal(code, "This account is already chatting");
                     } else if (code === "websocket") {
-                        onfatal("A websocket error - check your console for more details");
+                        onfatal(code, "A websocket error - check your console for more details");
                     }
                 };
                 this._status = 'opening';

@@ -208,11 +208,15 @@
                          * Displays an error message, coming from the chat.
                          * @param errorText The error text to display.
                          */
-                        window.chatError = function(message) {
+                        window.chatError = function(code, message) {
                             ChatUI.stop();
-                            $('#chat-content, #welcome-content').hide();
-                            $('#error-content span').text(message);
-                            $('#error-content').show();
+                            if (code === 'not-authenticated') {
+                                window.welcome();
+                            } else {
+                                $('#chat-content, #welcome-content').hide();
+                                $('#error-content span').text(message);
+                                $('#error-content').show();
+                            }
                         };
 
                         $(function() {
