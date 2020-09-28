@@ -45,3 +45,6 @@ services:
     # will be available there.
     volumes:
       - ./application:/code
+    depends_on:
+      - redis
+      - db
