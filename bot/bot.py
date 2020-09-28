@@ -65,22 +65,25 @@ async def ask_stock(session, asset):
     """
 
     url = 'https://stooq.com/q/l/?s=%s&f=sd2t2ohlcv&h&e=csv' % (urllib.parse.quote(asset.lower()),)
-    async with session.get(url) as response:
-        if response.status != 200:
-            print(">>> finbot: WARNING unexpected HTTP code %s for symbol: %s" % (response.status_code, asset))
-            return None, None
-        else:
-            reader = csv.DictReader((await response.text()).split('\n'))
-            try:
-                row = next(reader)
-                if row['Close'] == 'N/D':
-                    print(">>> finbot: WARNING bad or unavailable stock symbol: %s" % asset)
-                    return None, None
-                return row['Symbol'], row['Close']
-            except StopIteration:
-                print(">>> finbot: WARNING empty data for stock: %s" % asset)
+    try:
+        async with session.get(url) as response:
+            if response.status != 200:
+                print(">>> finbot: WARNING unexpected HTTP code %s for symbol %s" % (response.status_code, asset))
                 return None, None
-
+            else:
+                reader = csv.DictReader((await response.text()).split('\n'))
+                try:
+                    row = next(reader)
+                    if row['Close'] == 'N/D':
+                        print(">>> finbot: WARNING bad or unavailable stock symbol %s" % asset)
+                        return None, None
+                    return row['Symbol'], row['Close']
+                except StopIteration:
+                    print(">>> finbot: WARNING empty data for symbol %s" % asset)
+                    return None, None
+    except Exception as e:
+        print(">>> finbot: WARNING exception while trying to get data for symbol %s: %s, %s" % (asset, type(e).__name__, e.args))
+        return None, None
 
 async def lifecycle(session, token, host, rooms):
     """

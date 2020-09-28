@@ -181,10 +181,12 @@ Bot
 
 You can run the bot included in this repository (under the `bot/` subdirectory) to answer stock queries. There are two ways to run this both:
 
+This bot attends commands from users with the syntax: `/stock=<symbol>`, where symbol is an expected one from the [stooq](http://stooq.com) service.  
+
  - As a python script:
    - Pros: You need no additional docker setup for networking.
    - Cons: You need to manually install the dependencies in `requirements.txt` in a virtualenv.
- - As a docker image:
+ - As a docker container:
    - Pros: Running and ensuring dependencies is straightforward.
    - Cons: You need to configure an external network for both the docker-compose file for the application
            or constrain yourself to configure an external, public url, where you have the server application.
@@ -206,7 +208,7 @@ already in-use, this bot will respond to commands like /stock=aapl.us or /stock=
 To run the bot via command line, an example would be:
 
 ```
-$ FINBOT_USERNAME=botuser FINBOT_PASSWORD=botpwassword FINBOT_ROOMS=investments python bot.py
+$ FINBOT_USERNAME=botuser FINBOT_PASSWORD=botpwassword FINBOT_ROOMS=investments python3 bot.py
 ```
 
 To run the bot via docker, an example would be:
