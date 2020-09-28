@@ -1,5 +1,8 @@
 # Financial Chat
 
+This is a Jobsity challenge involving an http / rest chat interface. A multi-room chat supporting both web/html interface
+and also enabled to direct REST/Websocket interaction. Additionally, it has stock-querying related features for the users.
+
 This application consists of the following components:
 
  - A compose file with three containers:
@@ -46,7 +49,7 @@ Create more than one room. As an example, create these rooms:
 
  - friends: This is a regular room. Chat-only.
  - family: This is a regular room as well. Chat-only.
- - investments: This will be a special room in the next section. Just for now, it is as regular as the others.
+ - investments: This will be a special room in a latter section. Just for now, it is as regular as the others.
 
 Manual web test
 ---------------
@@ -64,6 +67,7 @@ This test involves opening several different browser sessions, like:
  - Sessions in different browsers.
 
 And registering (via the register form, with different usernames and e-mails) several users.
+Once logged in, an IRC-like interface will appear. The left sidebar will have at least two links:
 
  - "Server Logs" room: This is intended for server commands.
  - "Refresh rooms": Refreshes the whole rooms list.
