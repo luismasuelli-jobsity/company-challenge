@@ -23,7 +23,9 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SECRET_KEY = os.environ['SECRET_KEY']
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+# I'm keeping this DEBUG = True in order to avoid the complicated stuff
+# regarding static / media files.
+DEBUG = True
 
 ALLOWED_HOSTS = ['localhost']
 
