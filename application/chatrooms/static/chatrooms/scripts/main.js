@@ -222,9 +222,6 @@
         $(document).ajaxSend(function(e, xhr, opts) {
             let token = Chat.getToken();
             if (token) xhr.setRequestHeader('Authorization', 'Token ' + token);
-
-            let csrfToken = Cookies.get('csrftoken');
-            xhr.setRequestHeader('X-CSRFToken', csrfToken);
         });
     });
 })(jQuery);
