@@ -30,9 +30,11 @@ Be wary, for the stack will fail if one or more of the following ports are alrea
 The third step involves copying the static files, migrating the database, and setting the site's superuser:
 
     $ docker-compose exec server bash
+    
     root@container-id:/code# sh setup.sh
     # ... a lot of prompt involving copying static files and migrations
     # ... the prompt is slightly interactive.
+    
     root@container-id:/code# python manage.py createsuperuser
     Username (leave blank to use 'root'): su-username-of-choice
     Email address: username@whatev.er
@@ -177,7 +179,7 @@ And may receive the following messages from the server:
 Bot
 ---
 
-You can run the bot included in this repository to answer stock queries. There are two ways to run this both:
+You can run the bot included in this repository (under the `bot/` subdirectory) to answer stock queries. There are two ways to run this both:
 
  - As a python script:
    - Pros: You need no additional docker setup for networking.
