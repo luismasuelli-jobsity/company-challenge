@@ -118,23 +118,29 @@ async def lifecycle(session, token, host, rooms):
             async for message in websocket:
                 parsed = await parse(message)
                 if parsed:
-                    custom = parsed.get('command')
-                    room_name = parsed.get('room_name')
-                    asset = parsed.get('payload')
-                    print(">>> finbot: Received a message: %s" % (parsed,))
-                    if room_name and custom == 'stock' and asset:
-                        print(">>> finbot: A stock message. Processing...")
-                        normalized_asset, price = await ask_stock(session, asset)
-                        if price:
-                            print(">>> finbot: Parsed stooq data: %s %s" % (normalized_asset, price))
-                            await websocket.send_str(json.dumps(
-                                {"type": "message", "room_name": room_name,
-                                 "body": "%s quote is $%s per share" % (normalized_asset, price)}
-                            ))
+                    type_ = parsed.get('type')
+                    code = parsed.get('code')
+                    if type_ == 'room:notification' and code == 'custom':
+                        print(">>> finbot: Received a message: %s" % (parsed,))
+                        custom = parsed.get('command')
+                        if custom == 'stock':
+                            room_name = parsed.get('room_name')
+                            asset = parsed.get('payload')
+                            if room_name and asset:
+                                print(">>> finbot: A stock message. Processing...")
+                                normalized_asset, price = await ask_stock(session, asset)
+                                if price:
+                                    print(">>> finbot: Parsed stooq data: %s %s" % (normalized_asset, price))
+                                    await websocket.send_str(json.dumps(
+                                        {"type": "message", "room_name": room_name,
+                                         "body": "%s quote is $%s per share" % (normalized_asset, price)}
+                                    ))
+                                else:
+                                    print(">>> finbot: Stooq data not found for: %s" % (asset,))
+                                    await websocket.send_str(json.dumps({"type": "message", "room_name": room_name,
+                                                                         "body": "I could not find stock data for %s" % asset}))
                         else:
-                            print(">>> finbot: Stooq data not found for: %s" % (asset,))
-                            await websocket.send_str(json.dumps({"type": "message", "room_name": room_name,
-                                                                 "body": "I could not find stock data for %s" % asset}))
+                            print(">>> finbot: I don't know about the command: %s" % custom)
     except Exception as e:
         print(">>> finbot: Aborting due to exception: %s, %s" % (type(e).__name__, e.args))
         os._exit(1)
